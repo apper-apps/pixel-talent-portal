@@ -1,17 +1,20 @@
-import { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { toast } from "react-toastify";
 import { format } from "date-fns";
+import { communicationService } from "@/services/api/communicationService";
+import { applicationService } from "@/services/api/applicationService";
+import { clientService } from "@/services/api/clientService";
+import { candidateService } from "@/services/api/candidateService";
 import ApperIcon from "@/components/ApperIcon";
-import Badge from "@/components/atoms/Badge";
-import Button from "@/components/atoms/Button";
 import Loading from "@/components/ui/Loading";
 import Error from "@/components/ui/Error";
 import Empty from "@/components/ui/Empty";
-import { clientService } from "@/services/api/clientService";
-import { candidateService } from "@/services/api/candidateService";
-import { applicationService } from "@/services/api/applicationService";
+import Candidates from "@/components/pages/Candidates";
+import Clients from "@/components/pages/Clients";
+import Badge from "@/components/atoms/Badge";
+import Button from "@/components/atoms/Button";
 
 const ClientDetail = () => {
   const { id } = useParams();
@@ -142,7 +145,7 @@ const handleInterviewStatusChange = async (candidateId, newStatus) => {
       className="space-y-6"
     >
       {/* Header */}
-      <div className="flex items-center justify-between">
+<div className="flex items-center justify-between">
         <div className="flex items-center space-x-4">
           <Button
             variant="outline"

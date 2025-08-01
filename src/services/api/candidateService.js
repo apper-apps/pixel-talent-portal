@@ -1,49 +1,193 @@
-import candidatesData from "@/services/mockData/candidates.json";
-
 class CandidateService {
   constructor() {
-    this.data = [...candidatesData];
+    const { ApperClient } = window.ApperSDK;
+    this.apperClient = new ApperClient({
+      apperProjectId: import.meta.env.VITE_APPER_PROJECT_ID,
+      apperPublicKey: import.meta.env.VITE_APPER_PUBLIC_KEY
+    });
+    this.tableName = 'candidate';
+    this.lookupFields = ['currentAssignment'];
   }
 
   async getAll() {
     await this.delay(300);
-    return [...this.data];
+    try {
+      const params = {
+        fields: [
+          { field: { Name: "Name" } },
+          { field: { Name: "email" } },
+          { field: { Name: "skills" } },
+          { field: { Name: "experience" } },
+          { field: { Name: "status" } },
+          { field: { Name: "lastContact" } },
+          { field: { Name: "currentAssignment" } },
+          { field: { Name: "assignmentHistory" } },
+          { field: { Name: "hireDate" } },
+          { field: { Name: "position" } },
+          { field: { Name: "clientId" } },
+          { field: { Name: "interviewStatus" } }
+        ],
+        orderBy: [
+          {
+            fieldName: "lastContact",
+            sorttype: "DESC"
+          }
+        ]
+      };
+
+      const response = await this.apperClient.fetchRecords(this.tableName, params);
+      
+      if (!response.success) {
+        console.error(response.message);
+        throw new Error(response.message);
+      }
+
+      return response.data || [];
+    } catch (error) {
+      if (error?.response?.data?.message) {
+        console.error("Error fetching candidates:", error?.response?.data?.message);
+      } else {
+        console.error("Error fetching candidates:", error.message);
+      }
+      throw error;
+    }
   }
 
   async getById(id) {
     await this.delay(200);
-    const item = this.data.find(item => item.Id === parseInt(id));
-    if (!item) {
-      throw new Error("Candidate not found");
+    try {
+      const params = {
+        fields: [
+          { field: { Name: "Name" } },
+          { field: { Name: "email" } },
+          { field: { Name: "skills" } },
+          { field: { Name: "experience" } },
+          { field: { Name: "status" } },
+          { field: { Name: "lastContact" } },
+          { field: { Name: "currentAssignment" } },
+          { field: { Name: "assignmentHistory" } },
+          { field: { Name: "hireDate" } },
+          { field: { Name: "position" } },
+          { field: { Name: "clientId" } },
+          { field: { Name: "interviewStatus" } }
+        ]
+      };
+
+      const response = await this.apperClient.getRecordById(this.tableName, parseInt(id), params);
+      
+      if (!response.success) {
+        console.error(response.message);
+        throw new Error(response.message);
+      }
+
+      if (!response.data) {
+        throw new Error("Candidate not found");
+      }
+
+      return response.data;
+    } catch (error) {
+      if (error?.response?.data?.message) {
+        console.error("Error fetching candidate by ID:", error?.response?.data?.message);
+      } else {
+        console.error("Error fetching candidate by ID:", error.message);
+      }
+      throw error;
     }
-    return { ...item };
   }
 
-async create(candidate) {
+  async create(candidate) {
     await this.delay(400);
-    const newId = Math.max(...this.data.map(item => item.Id)) + 1;
-    const newCandidate = {
-      ...candidate,
-      Id: newId,
-      lastContact: new Date().toISOString(),
-      interviewStatus: 'Pending Interview'
-    };
-    this.data.push(newCandidate);
-    return { ...newCandidate };
+    try {
+      const params = {
+        records: [
+          {
+            Name: candidate.Name,
+            email: candidate.email,
+            skills: Array.isArray(candidate.skills) ? candidate.skills.join(',') : candidate.skills,
+            experience: candidate.experience,
+            status: candidate.status || "available",
+            lastContact: new Date().toISOString(),
+            interviewStatus: candidate.interviewStatus || "Pending Interview",
+            assignmentHistory: candidate.assignmentHistory || ""
+          }
+        ]
+      };
+
+      const response = await this.apperClient.createRecord(this.tableName, params);
+      
+      if (!response.success) {
+        console.error(response.message);
+        throw new Error(response.message);
+      }
+
+      if (response.results) {
+        const failedRecords = response.results.filter(result => !result.success);
+        if (failedRecords.length > 0) {
+          console.error(`Failed to create candidate records:${JSON.stringify(failedRecords)}`);
+          throw new Error(failedRecords[0].message || "Failed to create candidate");
+        }
+        return response.results[0].data;
+      }
+    } catch (error) {
+      if (error?.response?.data?.message) {
+        console.error("Error creating candidate:", error?.response?.data?.message);
+      } else {
+        console.error("Error creating candidate:", error.message);
+      }
+      throw error;
+    }
   }
 
-async update(id, updates) {
+  async update(id, updates) {
     await this.delay(350);
-    const index = this.data.findIndex(item => item.Id === parseInt(id));
-    if (index === -1) {
-      throw new Error("Candidate not found");
+    try {
+      const updateData = { ...updates };
+      
+      // Handle lookup fields - send only ID
+      this.lookupFields.forEach(fieldName => {
+        if (updateData[fieldName] !== undefined && updateData[fieldName] !== null) {
+          updateData[fieldName] = updateData[fieldName]?.Id || updateData[fieldName];
+        }
+      });
+
+      // Handle skills array to comma-separated string
+      if (updateData.skills && Array.isArray(updateData.skills)) {
+        updateData.skills = updateData.skills.join(',');
+      }
+
+      const params = {
+        records: [
+          {
+            Id: parseInt(id),
+            lastContact: new Date().toISOString(),
+            ...updateData
+          }
+        ]
+      };
+
+      const response = await this.apperClient.updateRecord(this.tableName, params);
+      
+      if (!response.success) {
+        console.error(response.message);
+        throw new Error(response.message);
+      }
+
+      if (response.results) {
+        const failedRecords = response.results.filter(result => !result.success);
+        if (failedRecords.length > 0) {
+          console.error(`Failed to update candidate records:${JSON.stringify(failedRecords)}`);
+          throw new Error(failedRecords[0].message || "Failed to update candidate");
+        }
+        return response.results[0].data;
+      }
+    } catch (error) {
+      if (error?.response?.data?.message) {
+        console.error("Error updating candidate:", error?.response?.data?.message);
+      } else {
+        console.error("Error updating candidate:", error.message);
+      }
+      throw error;
     }
-    this.data[index] = { 
-      ...this.data[index], 
-      ...updates,
-      lastContact: new Date().toISOString()
-    };
-    return { ...this.data[index] };
   }
 
   async logCommunication(candidateId, communicationData) {
@@ -62,117 +206,238 @@ async update(id, updates) {
     return await communicationService.getByEntity('candidate', parseInt(candidateId));
   }
 
-  // Assignment management methods
   async assignToClient(candidateId, clientId, assignedBy = "Current User") {
     await this.delay(400);
-    const candidate = await this.getById(candidateId);
-    
-    if (candidate.status !== 'available') {
-      throw new Error("Only available candidates can be assigned to clients");
+    try {
+      // First, create a candidate assignment record
+      const { ApperClient } = window.ApperSDK;
+      const assignmentClient = new ApperClient({
+        apperProjectId: import.meta.env.VITE_APPER_PROJECT_ID,
+        apperPublicKey: import.meta.env.VITE_APPER_PUBLIC_KEY
+      });
+
+      const assignmentParams = {
+        records: [
+          {
+            Name: `Assignment ${candidateId}-${clientId}`,
+            clientId: parseInt(clientId),
+            assignedAt: new Date().toISOString(),
+            assignedBy,
+            status: "active"
+          }
+        ]
+      };
+
+      const assignmentResponse = await assignmentClient.createRecord('candidate_assignment', assignmentParams);
+      
+      if (!assignmentResponse.success) {
+        console.error(assignmentResponse.message);
+        throw new Error(assignmentResponse.message);
+      }
+
+      const assignmentId = assignmentResponse.results[0].data.Id;
+
+      // Update candidate with assignment
+      const updates = {
+        currentAssignment: assignmentId,
+        status: 'assigned'
+      };
+
+      return await this.update(candidateId, updates);
+    } catch (error) {
+      if (error?.response?.data?.message) {
+        console.error("Error assigning candidate to client:", error?.response?.data?.message);
+      } else {
+        console.error("Error assigning candidate to client:", error.message);
+      }
+      throw error;
     }
-
-    const assignment = {
-      Id: Date.now(), // Simple ID generation
-      clientId: parseInt(clientId),
-      assignedAt: new Date().toISOString(),
-      assignedBy,
-      status: 'active'
-    };
-
-    const historyEntry = {
-      Id: Date.now() + 1,
-      clientId: parseInt(clientId),
-      assignedAt: new Date().toISOString(),
-      assignedBy,
-      status: 'assigned',
-      endedAt: null,
-      endReason: null
-    };
-
-const updates = {
-      currentAssignment: assignment,
-      assignmentHistory: [...(candidate.assignmentHistory || []), historyEntry],
-      status: 'assigned',
-      interviewStatus: candidate.interviewStatus || 'Pending Interview'
-    };
-    return await this.update(candidateId, updates);
   }
 
   async unassignFromClient(candidateId, reason = "Unassigned", unassignedBy = "Current User") {
     await this.delay(400);
-    const candidate = await this.getById(candidateId);
-    
-    if (!candidate.currentAssignment) {
-      throw new Error("Candidate is not currently assigned");
+    try {
+      const updates = {
+        currentAssignment: null,
+        status: 'available'
+      };
+
+      return await this.update(candidateId, updates);
+    } catch (error) {
+      if (error?.response?.data?.message) {
+        console.error("Error unassigning candidate from client:", error?.response?.data?.message);
+      } else {
+        console.error("Error unassigning candidate from client:", error.message);
+      }
+      throw error;
     }
-
-    // Update assignment history
-    const updatedHistory = candidate.assignmentHistory.map(entry => 
-      entry.status === 'assigned' && !entry.endedAt
-        ? {
-            ...entry,
-            endedAt: new Date().toISOString(),
-            endReason: reason,
-            status: 'completed'
-          }
-        : entry
-    );
-
-    const updates = {
-      currentAssignment: null,
-      assignmentHistory: updatedHistory,
-      status: 'available'
-    };
-
-    return await this.update(candidateId, updates);
   }
 
   async getAssignmentHistory(candidateId) {
     await this.delay(200);
-    const candidate = await this.getById(candidateId);
-    return candidate.assignmentHistory || [];
+    try {
+      const candidate = await this.getById(candidateId);
+      return candidate.assignmentHistory || [];
+    } catch (error) {
+      if (error?.response?.data?.message) {
+        console.error("Error fetching assignment history:", error?.response?.data?.message);
+      } else {
+        console.error("Error fetching assignment history:", error.message);
+      }
+      throw error;
+    }
   }
 
   async getAssignedCandidates(clientId) {
     await this.delay(300);
-    return this.data.filter(candidate => 
-      candidate.currentAssignment && 
-      candidate.currentAssignment.clientId === parseInt(clientId)
-    );
+    try {
+      const params = {
+        fields: [
+          { field: { Name: "Name" } },
+          { field: { Name: "email" } },
+          { field: { Name: "skills" } },
+          { field: { Name: "experience" } },
+          { field: { Name: "status" } },
+          { field: { Name: "lastContact" } },
+          { field: { Name: "currentAssignment" } },
+          { field: { Name: "interviewStatus" } }
+        ],
+        where: [
+          {
+            FieldName: "status",
+            Operator: "EqualTo",
+            Values: ["assigned"]
+          }
+        ]
+      };
+
+      const response = await this.apperClient.fetchRecords(this.tableName, params);
+      
+      if (!response.success) {
+        console.error(response.message);
+        throw new Error(response.message);
+      }
+
+      // Filter candidates assigned to this client (would need better implementation with proper assignment table)
+      return (response.data || []).filter(candidate => 
+        candidate.currentAssignment && 
+        candidate.currentAssignment.clientId === parseInt(clientId)
+      );
+    } catch (error) {
+      if (error?.response?.data?.message) {
+        console.error("Error fetching assigned candidates:", error?.response?.data?.message);
+      } else {
+        console.error("Error fetching assigned candidates:", error.message);
+      }
+      throw error;
+    }
   }
+
   async delete(id) {
     await this.delay(250);
-    const index = this.data.findIndex(item => item.Id === parseInt(id));
-    if (index === -1) {
-      throw new Error("Candidate not found");
+    try {
+      const params = {
+        RecordIds: [parseInt(id)]
+      };
+
+      const response = await this.apperClient.deleteRecord(this.tableName, params);
+      
+      if (!response.success) {
+        console.error(response.message);
+        throw new Error(response.message);
+      }
+
+      if (response.results) {
+        const failedRecords = response.results.filter(result => !result.success);
+        if (failedRecords.length > 0) {
+          console.error(`Failed to delete candidate records:${JSON.stringify(failedRecords)}`);
+          throw new Error(failedRecords[0].message || "Failed to delete candidate");
+        }
+        return response.results[0].data;
+      }
+    } catch (error) {
+      if (error?.response?.data?.message) {
+        console.error("Error deleting candidate:", error?.response?.data?.message);
+      } else {
+        console.error("Error deleting candidate:", error.message);
+      }
+      throw error;
     }
-    const deleted = this.data.splice(index, 1)[0];
-    return { ...deleted };
-}
-
-async updateInterviewStatus(candidateId, interviewStatus) {
-    await this.delay(300);
-    const candidate = await this.getById(candidateId);
-    
-    const updates = {
-      interviewStatus,
-      lastContact: new Date().toISOString()
-    };
-
-    // Log the status change as communication
-    await this.logCommunication(candidateId, {
-      communicationType: 'Internal Note',
-      subject: `Interview status updated to ${interviewStatus}`,
-      content: `Interview status changed from "${candidate.interviewStatus || 'Pending Interview'}" to "${interviewStatus}"`,
-      priority: 'normal'
-    });
-
-    return this.update(candidateId, updates);
   }
 
-async getHiredCandidates() {
+  async updateInterviewStatus(candidateId, interviewStatus) {
     await this.delay(300);
-    return this.data.filter(candidate => candidate.status === 'hired');
+    try {
+      const candidate = await this.getById(candidateId);
+      
+      const updates = {
+        interviewStatus
+      };
+
+      // Log the status change as communication
+      await this.logCommunication(candidateId, {
+        communicationType: 'Internal Note',
+        subject: `Interview status updated to ${interviewStatus}`,
+        content: `Interview status changed from "${candidate.interviewStatus || 'Pending Interview'}" to "${interviewStatus}"`,
+        priority: 'normal'
+      });
+
+      return this.update(candidateId, updates);
+    } catch (error) {
+      if (error?.response?.data?.message) {
+        console.error("Error updating interview status:", error?.response?.data?.message);
+      } else {
+        console.error("Error updating interview status:", error.message);
+      }
+      throw error;
+    }
+  }
+
+  async getHiredCandidates() {
+    await this.delay(300);
+    try {
+      const params = {
+        fields: [
+          { field: { Name: "Name" } },
+          { field: { Name: "email" } },
+          { field: { Name: "skills" } },
+          { field: { Name: "experience" } },
+          { field: { Name: "status" } },
+          { field: { Name: "hireDate" } },
+          { field: { Name: "position" } },
+          { field: { Name: "clientId" } }
+        ],
+        where: [
+          {
+            FieldName: "status",
+            Operator: "EqualTo",
+            Values: ["hired"]
+          }
+        ],
+        orderBy: [
+          {
+            fieldName: "hireDate",
+            sorttype: "DESC"
+          }
+        ]
+      };
+
+      const response = await this.apperClient.fetchRecords(this.tableName, params);
+      
+      if (!response.success) {
+        console.error(response.message);
+        throw new Error(response.message);
+      }
+
+      return response.data || [];
+    } catch (error) {
+      if (error?.response?.data?.message) {
+        console.error("Error fetching hired candidates:", error?.response?.data?.message);
+      } else {
+        console.error("Error fetching hired candidates:", error.message);
+      }
+      throw error;
+    }
   }
 
   delay(ms) {

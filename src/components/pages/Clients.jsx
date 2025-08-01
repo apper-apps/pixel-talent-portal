@@ -275,7 +275,7 @@ className="space-y-6"
             className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-lg hover:border-primary-200 transition-all duration-200 cursor-pointer"
             onClick={() => handleClientClick(client.Id)}
           >
-            <div className="flex items-start justify-between mb-4">
+<div className="flex items-start justify-between mb-4">
               <div className="flex items-center space-x-3">
                 <div className="w-12 h-12 bg-gradient-to-br from-primary-500 to-primary-600 rounded-xl flex items-center justify-center">
                   <ApperIcon name="Building2" size={24} className="text-white" />

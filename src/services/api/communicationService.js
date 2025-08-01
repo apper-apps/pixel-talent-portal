@@ -1,74 +1,338 @@
-import communicationsData from "@/services/mockData/communications.json";
-
 class CommunicationService {
   constructor() {
-    this.data = [...communicationsData];
+    const { ApperClient } = window.ApperSDK;
+    this.apperClient = new ApperClient({
+      apperProjectId: import.meta.env.VITE_APPER_PROJECT_ID,
+      apperPublicKey: import.meta.env.VITE_APPER_PUBLIC_KEY
+    });
+    this.tableName = 'communication';
   }
 
   async getAll() {
     await this.delay(300);
-    return [...this.data];
+    try {
+      const params = {
+        fields: [
+          { field: { Name: "Name" } },
+          { field: { Name: "entityType" } },
+          { field: { Name: "entityId" } },
+          { field: { Name: "relatedEntityType" } },
+          { field: { Name: "relatedEntityId" } },
+          { field: { Name: "communicationType" } },
+          { field: { Name: "subject" } },
+          { field: { Name: "content" } },
+          { field: { Name: "timestamp" } },
+          { field: { Name: "priority" } },
+          { field: { Name: "status" } }
+        ],
+        orderBy: [
+          {
+            fieldName: "timestamp",
+            sorttype: "DESC"
+          }
+        ]
+      };
+
+      const response = await this.apperClient.fetchRecords(this.tableName, params);
+      
+      if (!response.success) {
+        console.error(response.message);
+        throw new Error(response.message);
+      }
+
+      return response.data || [];
+    } catch (error) {
+      if (error?.response?.data?.message) {
+        console.error("Error fetching communications:", error?.response?.data?.message);
+      } else {
+        console.error("Error fetching communications:", error.message);
+      }
+      throw error;
+    }
   }
 
   async getById(id) {
     await this.delay(200);
-    const item = this.data.find(item => item.Id === parseInt(id));
-    if (!item) {
-      throw new Error("Communication not found");
+    try {
+      const params = {
+        fields: [
+          { field: { Name: "Name" } },
+          { field: { Name: "entityType" } },
+          { field: { Name: "entityId" } },
+          { field: { Name: "relatedEntityType" } },
+          { field: { Name: "relatedEntityId" } },
+          { field: { Name: "communicationType" } },
+          { field: { Name: "subject" } },
+          { field: { Name: "content" } },
+          { field: { Name: "timestamp" } },
+          { field: { Name: "priority" } },
+          { field: { Name: "status" } }
+        ]
+      };
+
+      const response = await this.apperClient.getRecordById(this.tableName, parseInt(id), params);
+      
+      if (!response.success) {
+        console.error(response.message);
+        throw new Error(response.message);
+      }
+
+      if (!response.data) {
+        throw new Error("Communication not found");
+      }
+
+      return response.data;
+    } catch (error) {
+      if (error?.response?.data?.message) {
+        console.error("Error fetching communication by ID:", error?.response?.data?.message);
+      } else {
+        console.error("Error fetching communication by ID:", error.message);
+      }
+      throw error;
     }
-    return { ...item };
   }
 
   async getByEntity(entityType, entityId) {
     await this.delay(250);
-    return this.data.filter(comm => 
-      comm.entityType === entityType && comm.entityId === parseInt(entityId)
-    );
+    try {
+      const params = {
+        fields: [
+          { field: { Name: "Name" } },
+          { field: { Name: "entityType" } },
+          { field: { Name: "entityId" } },
+          { field: { Name: "relatedEntityType" } },
+          { field: { Name: "relatedEntityId" } },
+          { field: { Name: "communicationType" } },
+          { field: { Name: "subject" } },
+          { field: { Name: "content" } },
+          { field: { Name: "timestamp" } },
+          { field: { Name: "priority" } },
+          { field: { Name: "status" } }
+        ],
+        where: [
+          {
+            FieldName: "entityType",
+            Operator: "EqualTo",
+            Values: [entityType]
+          },
+          {
+            FieldName: "entityId",
+            Operator: "EqualTo",
+            Values: [parseInt(entityId)]
+          }
+        ],
+        orderBy: [
+          {
+            fieldName: "timestamp",
+            sorttype: "DESC"
+          }
+        ]
+      };
+
+      const response = await this.apperClient.fetchRecords(this.tableName, params);
+      
+      if (!response.success) {
+        console.error(response.message);
+        throw new Error(response.message);
+      }
+
+      return response.data || [];
+    } catch (error) {
+      if (error?.response?.data?.message) {
+        console.error("Error fetching communications by entity:", error?.response?.data?.message);
+      } else {
+        console.error("Error fetching communications by entity:", error.message);
+      }
+      throw error;
+    }
   }
 
   async getByEntityAndRelated(entityType, entityId, relatedEntityType = null, relatedEntityId = null) {
     await this.delay(250);
-    return this.data.filter(comm => 
-      comm.entityType === entityType && 
-      comm.entityId === parseInt(entityId) &&
-      (relatedEntityType ? comm.relatedEntityType === relatedEntityType : true) &&
-      (relatedEntityId ? comm.relatedEntityId === parseInt(relatedEntityId) : true)
-    );
+    try {
+      const where = [
+        {
+          FieldName: "entityType",
+          Operator: "EqualTo",
+          Values: [entityType]
+        },
+        {
+          FieldName: "entityId",
+          Operator: "EqualTo",
+          Values: [parseInt(entityId)]
+        }
+      ];
+
+      if (relatedEntityType) {
+        where.push({
+          FieldName: "relatedEntityType",
+          Operator: "EqualTo",
+          Values: [relatedEntityType]
+        });
+      }
+
+      if (relatedEntityId) {
+        where.push({
+          FieldName: "relatedEntityId",
+          Operator: "EqualTo",
+          Values: [parseInt(relatedEntityId)]
+        });
+      }
+
+      const params = {
+        fields: [
+          { field: { Name: "Name" } },
+          { field: { Name: "entityType" } },
+          { field: { Name: "entityId" } },
+          { field: { Name: "relatedEntityType" } },
+          { field: { Name: "relatedEntityId" } },
+          { field: { Name: "communicationType" } },
+          { field: { Name: "subject" } },
+          { field: { Name: "content" } },
+          { field: { Name: "timestamp" } },
+          { field: { Name: "priority" } },
+          { field: { Name: "status" } }
+        ],
+        where,
+        orderBy: [
+          {
+            fieldName: "timestamp",
+            sorttype: "DESC"
+          }
+        ]
+      };
+
+      const response = await this.apperClient.fetchRecords(this.tableName, params);
+      
+      if (!response.success) {
+        console.error(response.message);
+        throw new Error(response.message);
+      }
+
+      return response.data || [];
+    } catch (error) {
+      if (error?.response?.data?.message) {
+        console.error("Error fetching communications by entity and related:", error?.response?.data?.message);
+      } else {
+        console.error("Error fetching communications by entity and related:", error.message);
+      }
+      throw error;
+    }
   }
 
   async create(communication) {
     await this.delay(400);
-    const newId = Math.max(...this.data.map(item => item.Id), 0) + 1;
-    const newCommunication = {
-      ...communication,
-      Id: newId,
-      timestamp: new Date().toISOString(),
-      createdBy: communication.createdBy || "Current User",
-      priority: communication.priority || "normal",
-      status: communication.status || "completed"
-    };
-    this.data.push(newCommunication);
-    return { ...newCommunication };
+    try {
+      const params = {
+        records: [
+          {
+            Name: communication.subject || "Communication",
+            entityType: communication.entityType,
+            entityId: parseInt(communication.entityId),
+            relatedEntityType: communication.relatedEntityType || null,
+            relatedEntityId: communication.relatedEntityId ? parseInt(communication.relatedEntityId) : null,
+            communicationType: communication.communicationType,
+            subject: communication.subject,
+            content: communication.content,
+            timestamp: new Date().toISOString(),
+            priority: communication.priority || "normal",
+            status: communication.status || "completed"
+          }
+        ]
+      };
+
+      const response = await this.apperClient.createRecord(this.tableName, params);
+      
+      if (!response.success) {
+        console.error(response.message);
+        throw new Error(response.message);
+      }
+
+      if (response.results) {
+        const failedRecords = response.results.filter(result => !result.success);
+        if (failedRecords.length > 0) {
+          console.error(`Failed to create communication records:${JSON.stringify(failedRecords)}`);
+          throw new Error(failedRecords[0].message || "Failed to create communication");
+        }
+        return response.results[0].data;
+      }
+    } catch (error) {
+      if (error?.response?.data?.message) {
+        console.error("Error creating communication:", error?.response?.data?.message);
+      } else {
+        console.error("Error creating communication:", error.message);
+      }
+      throw error;
+    }
   }
 
   async update(id, updates) {
     await this.delay(350);
-    const index = this.data.findIndex(item => item.Id === parseInt(id));
-    if (index === -1) {
-      throw new Error("Communication not found");
+    try {
+      const params = {
+        records: [
+          {
+            Id: parseInt(id),
+            ...updates
+          }
+        ]
+      };
+
+      const response = await this.apperClient.updateRecord(this.tableName, params);
+      
+      if (!response.success) {
+        console.error(response.message);
+        throw new Error(response.message);
+      }
+
+      if (response.results) {
+        const failedRecords = response.results.filter(result => !result.success);
+        if (failedRecords.length > 0) {
+          console.error(`Failed to update communication records:${JSON.stringify(failedRecords)}`);
+          throw new Error(failedRecords[0].message || "Failed to update communication");
+        }
+        return response.results[0].data;
+      }
+    } catch (error) {
+      if (error?.response?.data?.message) {
+        console.error("Error updating communication:", error?.response?.data?.message);
+      } else {
+        console.error("Error updating communication:", error.message);
+      }
+      throw error;
     }
-    this.data[index] = { ...this.data[index], ...updates };
-    return { ...this.data[index] };
   }
 
   async delete(id) {
     await this.delay(250);
-    const index = this.data.findIndex(item => item.Id === parseInt(id));
-    if (index === -1) {
-      throw new Error("Communication not found");
+    try {
+      const params = {
+        RecordIds: [parseInt(id)]
+      };
+
+      const response = await this.apperClient.deleteRecord(this.tableName, params);
+      
+      if (!response.success) {
+        console.error(response.message);
+        throw new Error(response.message);
+      }
+
+      if (response.results) {
+        const failedRecords = response.results.filter(result => !result.success);
+        if (failedRecords.length > 0) {
+          console.error(`Failed to delete communication records:${JSON.stringify(failedRecords)}`);
+          throw new Error(failedRecords[0].message || "Failed to delete communication");
+        }
+        return response.results[0].data;
+      }
+    } catch (error) {
+      if (error?.response?.data?.message) {
+        console.error("Error deleting communication:", error?.response?.data?.message);
+      } else {
+        console.error("Error deleting communication:", error.message);
+      }
+      throw error;
     }
-    const deleted = this.data.splice(index, 1)[0];
-    return { ...deleted };
   }
 
   async logCommunication(entityType, entityId, communicationData) {
@@ -82,8 +346,7 @@ class CommunicationService {
 
   async getCommunicationHistory(entityType, entityId) {
     await this.delay(250);
-    const communications = await this.getByEntity(entityType, entityId);
-    return communications.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+    return await this.getByEntity(entityType, entityId);
   }
 
   delay(ms) {

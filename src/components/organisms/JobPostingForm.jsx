@@ -7,7 +7,7 @@ import ApperIcon from "@/components/ApperIcon";
 
 const JobPostingForm = ({ onSubmit, onCancel, initialData = null }) => {
   const [formData, setFormData] = useState({
-    title: initialData?.title || "",
+title: initialData?.title || "",
     description: initialData?.description || "",
     requirements: initialData?.requirements || ""
   });

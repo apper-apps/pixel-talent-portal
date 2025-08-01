@@ -14,11 +14,10 @@ const JobPostings = () => {
 
   const handleFormSubmit = async (formData) => {
     try {
-      await jobPostingService.create({
+await jobPostingService.create({
         ...formData,
         status: "active",
-        applicationCount: 0,
-        createdAt: new Date().toISOString()
+        applicationCount: 0
       });
       setShowForm(false);
       setRefreshTrigger(prev => prev + 1);

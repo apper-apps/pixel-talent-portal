@@ -18,7 +18,7 @@ const JobPostingList = ({ onCreateNew, refreshTrigger }) => {
     try {
       setLoading(true);
       setError("");
-      const data = await jobPostingService.getAll();
+const data = await jobPostingService.getAll();
       setJobs(data);
     } catch (err) {
       setError("Failed to load job postings");

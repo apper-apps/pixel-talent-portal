@@ -1,11 +1,14 @@
-import { useState } from "react";
+import { useState, useContext } from "react";
 import { Outlet } from "react-router-dom";
-import { useAuth } from "@/contexts/AuthContext";
+import { useSelector } from 'react-redux';
+import { AuthContext } from "@/App";
 import Header from "@/components/organisms/Header";
 import Sidebar from "@/components/organisms/Sidebar";
+
 const Layout = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const { user, logout } = useAuth();
+  const userState = useSelector((state) => state.user);
+  const { logout } = useContext(AuthContext);
 
   const handleMobileMenuToggle = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
@@ -22,12 +25,13 @@ const Layout = () => {
       console.error('Logout error:', error);
     }
   };
-return (
+
+  return (
     <div className="min-h-screen bg-gray-50">
       <Sidebar 
         isMobileMenuOpen={isMobileMenuOpen}
         onMobileMenuClose={handleMobileMenuClose}
-        user={user}
+        user={userState?.user}
         onLogout={handleLogout}
       />
       
@@ -35,7 +39,7 @@ return (
         <Header 
           onMenuClick={handleMobileMenuToggle}
           isMobileMenuOpen={isMobileMenuOpen}
-          user={user}
+          user={userState?.user}
           onLogout={handleLogout}
         />
         

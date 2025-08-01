@@ -1,12 +1,13 @@
-import { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { toast } from "react-toastify";
+import { clientService } from "@/services/api/clientService";
+import { candidateService } from "@/services/api/candidateService";
+import ApperIcon from "@/components/ApperIcon";
 import Loading from "@/components/ui/Loading";
 import Error from "@/components/ui/Error";
 import Empty from "@/components/ui/Empty";
-import ApperIcon from "@/components/ApperIcon";
 import Badge from "@/components/atoms/Badge";
-import { candidateService } from "@/services/api/candidateService";
 
 const Candidates = () => {
   const [candidates, setCandidates] = useState([]);
@@ -167,29 +168,29 @@ const Candidates = () => {
                     transition={{ delay: index * 0.1 }}
                     className="hover:bg-gray-50 transition-colors"
                   >
-                    <td className="px-6 py-4 whitespace-nowrap">
+<td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
                         <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-primary-600 rounded-full flex items-center justify-center">
                           <span className="text-white font-medium text-sm">
-                            {candidate.name.charAt(0).toUpperCase()}
+                            {candidate.Name?.charAt(0)?.toUpperCase() || 'N'}
                           </span>
                         </div>
                         <div className="ml-4">
-                          <div className="text-sm font-medium text-gray-900">{candidate.name}</div>
+                          <div className="text-sm font-medium text-gray-900">{candidate.Name}</div>
                           <div className="text-sm text-gray-500">{candidate.email}</div>
                         </div>
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      <div className="flex flex-wrap gap-1">
-                        {candidate.skills.slice(0, 3).map((skill, i) => (
+<div className="flex flex-wrap gap-1">
+                        {(typeof candidate.skills === 'string' ? candidate.skills.split(',') : candidate.skills || []).slice(0, 3).map((skill, i) => (
                           <Badge key={i} variant="primary" className="text-xs">
-                            {skill}
+                            {skill.trim()}
                           </Badge>
                         ))}
-                        {candidate.skills.length > 3 && (
+                        {(typeof candidate.skills === 'string' ? candidate.skills.split(',') : candidate.skills || []).length > 3 && (
                           <Badge variant="default" className="text-xs">
-                            +{candidate.skills.length - 3}
+                            +{(typeof candidate.skills === 'string' ? candidate.skills.split(',') : candidate.skills || []).length - 3}
                           </Badge>
                         )}
                       </div>
@@ -272,8 +273,8 @@ const Candidates = () => {
                           <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-full flex items-center justify-center">
                             <ApperIcon name="CheckCircle" size={16} className="text-white" />
                           </div>
-                          <div className="ml-4">
-                            <div className="text-sm font-medium text-gray-900">{candidate.name}</div>
+<div className="ml-4">
+                            <div className="text-sm font-medium text-gray-900">{candidate.Name}</div>
                             <div className="text-sm text-gray-500">{candidate.email}</div>
                           </div>
                         </div>
@@ -281,8 +282,8 @@ const Candidates = () => {
                       <td className="px-6 py-4">
                         <div className="text-sm text-gray-900 font-medium">{candidate.position}</div>
                         <div className="text-sm text-gray-500">
-                          {candidate.skills.slice(0, 2).join(', ')}
-                          {candidate.skills.length > 2 && '...'}
+                          {(typeof candidate.skills === 'string' ? candidate.skills.split(',') : candidate.skills || []).slice(0, 2).map(s => s.trim()).join(', ')}
+                          {(typeof candidate.skills === 'string' ? candidate.skills.split(',') : candidate.skills || []).length > 2 && '...'}
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
