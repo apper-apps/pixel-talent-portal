@@ -19,13 +19,14 @@ class CandidateService {
     return { ...item };
   }
 
-  async create(candidate) {
+async create(candidate) {
     await this.delay(400);
     const newId = Math.max(...this.data.map(item => item.Id)) + 1;
     const newCandidate = {
       ...candidate,
       Id: newId,
-      lastContact: new Date().toISOString()
+      lastContact: new Date().toISOString(),
+      interviewStatus: 'Pending Interview'
     };
     this.data.push(newCandidate);
     return { ...newCandidate };
@@ -68,12 +69,12 @@ class CandidateService {
       endReason: null
     };
 
-    const updates = {
+const updates = {
       currentAssignment: assignment,
       assignmentHistory: [...(candidate.assignmentHistory || []), historyEntry],
-      status: 'assigned'
+      status: 'assigned',
+      interviewStatus: candidate.interviewStatus || 'Pending Interview'
     };
-
     return await this.update(candidateId, updates);
   }
 
@@ -127,6 +128,18 @@ class CandidateService {
     }
     const deleted = this.data.splice(index, 1)[0];
     return { ...deleted };
+}
+
+  async updateInterviewStatus(candidateId, interviewStatus) {
+    await this.delay(300);
+    const candidate = await this.getById(candidateId);
+    
+    const updates = {
+      interviewStatus,
+      lastContact: new Date().toISOString()
+    };
+
+    return this.update(candidateId, updates);
   }
 
   delay(ms) {

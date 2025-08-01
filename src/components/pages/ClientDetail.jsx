@@ -23,12 +23,12 @@ const ClientDetail = () => {
   const [error, setError] = useState("");
   const [statusUpdating, setStatusUpdating] = useState({});
 
-  const interviewStatusOptions = [
-    { value: "Not Started", label: "Not Started", variant: "default" },
-    { value: "Scheduled", label: "Scheduled", variant: "warning" },
-    { value: "In Progress", label: "In Progress", variant: "primary" },
-    { value: "Completed", label: "Completed", variant: "success" },
-    { value: "On Hold", label: "On Hold", variant: "error" }
+const interviewStatusOptions = [
+    { value: "Pending Interview", label: "Pending Interview", variant: "default" },
+    { value: "Interviewed", label: "Interviewed", variant: "primary" },
+    { value: "Offer Extended", label: "Offer Extended", variant: "warning" },
+    { value: "Hired", label: "Hired", variant: "success" },
+    { value: "Not Selected", label: "Not Selected", variant: "error" }
   ];
 
   useEffect(() => {
@@ -63,12 +63,19 @@ const ClientDetail = () => {
     }
   };
 
-  const handleInterviewStatusChange = async (candidateId, newStatus) => {
+const handleInterviewStatusChange = async (candidateId, newStatus) => {
     try {
       setStatusUpdating(prev => ({ ...prev, [candidateId]: true }));
       
-      // In a real app, this would update interview status in the backend
-      // For now, we'll just show a success message
+      await candidateService.updateInterviewStatus(candidateId, newStatus);
+      
+      // Update local state
+      setCandidates(prev => prev.map(candidate => 
+        candidate.Id === candidateId 
+          ? { ...candidate, interviewStatus: newStatus }
+          : candidate
+      ));
+      
       toast.success(`Interview status updated to "${newStatus}"`);
       
     } catch (err) {
@@ -320,13 +327,13 @@ const ClientDetail = () => {
                           )}
 
                           {/* Interview Status Management */}
-                          <div className="flex items-center space-x-4">
+<div className="flex items-center space-x-4">
                             <div className="flex-1">
                               <label className="text-sm font-medium text-gray-500 block mb-1">
                                 Interview Status
                               </label>
                               <select
-                                defaultValue="Not Started"
+                                value={candidate.interviewStatus || "Pending Interview"}
                                 onChange={(e) => handleInterviewStatusChange(candidate.Id, e.target.value)}
                                 disabled={isUpdating}
                                 className="w-full px-3 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent disabled:bg-gray-100"
