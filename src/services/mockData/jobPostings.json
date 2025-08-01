@@ -1,0 +1,56 @@
+[
+  {
+    "Id": 1,
+    "title": "Senior Virtual Assistant - Executive Support",
+    "description": "We are seeking an experienced Virtual Assistant to provide comprehensive executive support to our C-level executives. The ideal candidate will have excellent communication skills, be highly organized, and capable of managing multiple priorities in a fast-paced environment. Responsibilities include calendar management, travel coordination, document preparation, and serving as a liaison between executives and internal/external stakeholders.",
+    "requirements": "Bachelor's degree preferred, 3+ years of executive assistant experience, proficiency in Microsoft Office Suite and Google Workspace, excellent written and verbal communication skills, ability to maintain confidentiality, experience with travel planning and expense management.",
+    "status": "active",
+    "applicationCount": 12,
+    "createdAt": "2024-01-15T09:00:00Z"
+  },
+  {
+    "Id": 2,
+    "title": "Virtual Assistant - Customer Success",
+    "description": "Join our growing customer success team as a Virtual Assistant focused on enhancing client relationships and ensuring customer satisfaction. You'll be responsible for onboarding new clients, managing customer communications, processing support tickets, and maintaining customer databases. This role requires a customer-first mindset and strong problem-solving abilities.",
+    "requirements": "2+ years of customer service experience, experience with CRM systems (Salesforce, HubSpot), excellent phone and email communication skills, ability to work independently, basic knowledge of project management tools, strong attention to detail.",
+    "status": "active",
+    "applicationCount": 8,
+    "createdAt": "2024-01-12T14:30:00Z"
+  },
+  {
+    "Id": 3,
+    "title": "Virtual Assistant - Marketing Support",
+    "description": "We're looking for a creative and detail-oriented Virtual Assistant to support our marketing team. You'll assist with content creation, social media management, email marketing campaigns, market research, and event coordination. The perfect candidate will have a passion for marketing and the ability to adapt to various marketing tools and platforms.",
+    "requirements": "Marketing experience preferred, familiarity with social media platforms and scheduling tools, basic graphic design skills (Canva, Adobe Creative Suite), experience with email marketing platforms (Mailchimp, Constant Contact), strong writing skills, analytical mindset.",
+    "status": "active",
+    "applicationCount": 15,
+    "createdAt": "2024-01-10T11:15:00Z"
+  },
+  {
+    "Id": 4,
+    "title": "Virtual Assistant - Data Entry Specialist",
+    "description": "Seeking a meticulous Virtual Assistant specializing in data entry and database management. You'll be responsible for maintaining accurate records, processing large volumes of data, generating reports, and ensuring data quality across multiple systems. This role requires exceptional attention to detail and proficiency with spreadsheet applications.",
+    "requirements": "High school diploma required, advanced Excel skills, experience with database management, typing speed of 60+ WPM with 98% accuracy, familiarity with data validation techniques, ability to work with minimal supervision, strong organizational skills.",
+    "status": "active",
+    "applicationCount": 6,
+    "createdAt": "2024-01-08T16:45:00Z"
+  },
+  {
+    "Id": 5,
+    "title": "Virtual Assistant - Administrative Operations",
+    "description": "We need an experienced Virtual Assistant to handle general administrative operations for our growing business. Your responsibilities will include managing correspondence, scheduling appointments, maintaining filing systems, processing invoices, coordinating meetings, and providing general administrative support to various departments.",
+    "requirements": "2+ years of administrative experience, proficiency in Microsoft Office Suite, experience with scheduling software, strong organizational and multitasking abilities, excellent phone etiquette, familiarity with basic accounting principles, reliable internet connection.",
+    "status": "active",
+    "applicationCount": 9,
+    "createdAt": "2024-01-05T10:20:00Z"
+  },
+  {
+    "Id": 6,
+    "title": "Virtual Assistant - E-commerce Support",
+    "description": "Join our e-commerce team as a Virtual Assistant specializing in online retail operations. You'll manage product listings, process orders, handle customer inquiries, update inventory, coordinate with suppliers, and assist with marketplace management across multiple platforms including Amazon, eBay, and Shopify.",
+    "requirements": "E-commerce experience preferred, familiarity with online marketplaces (Amazon, eBay, Shopify), basic photo editing skills, inventory management experience, customer service skills, understanding of SEO basics, ability to learn new platforms quickly.",
+    "status": "active",
+    "applicationCount": 11,
+    "createdAt": "2024-01-03T13:00:00Z"
+  }
+]

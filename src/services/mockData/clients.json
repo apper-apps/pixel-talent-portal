@@ -1,0 +1,62 @@
+[
+  {
+    "Id": 1,
+    "company": "TechFlow Solutions",
+    "industry": "Software Development",
+    "contactPerson": "Jennifer Adams",
+    "email": "jennifer.adams@techflow.com",
+    "status": "active",
+    "activePositions": 3,
+    "lastContact": "2024-01-15T14:30:00Z"
+  },
+  {
+    "Id": 2,
+    "company": "Global Marketing Hub",
+    "industry": "Digital Marketing",
+    "contactPerson": "Mark Stevens",
+    "email": "mark.stevens@globalmktg.com",
+    "status": "active",
+    "activePositions": 2,
+    "lastContact": "2024-01-14T11:20:00Z"
+  },
+  {
+    "Id": 3,
+    "company": "E-Commerce Plus",
+    "industry": "Online Retail",
+    "contactPerson": "Sarah Mitchell",
+    "email": "sarah.mitchell@ecomplus.com",
+    "status": "active",
+    "activePositions": 4,
+    "lastContact": "2024-01-13T16:45:00Z"
+  },
+  {
+    "Id": 4,
+    "company": "Executive Partners LLC",
+    "industry": "Business Consulting",
+    "contactPerson": "Richard Thompson",
+    "email": "richard.thompson@execpartners.com",
+    "status": "active",
+    "activePositions": 1,
+    "lastContact": "2024-01-12T09:30:00Z"
+  },
+  {
+    "Id": 5,
+    "company": "Data Dynamics Corp",
+    "industry": "Data Analytics",
+    "contactPerson": "Lisa Chen",
+    "email": "lisa.chen@datadynamics.com",
+    "status": "inactive",
+    "activePositions": 0,
+    "lastContact": "2024-01-10T13:15:00Z"
+  },
+  {
+    "Id": 6,
+    "company": "Customer First Solutions",
+    "industry": "Customer Service",
+    "contactPerson": "Michael Rodriguez",
+    "email": "michael.rodriguez@customerfirst.com",
+    "status": "active",
+    "activePositions": 2,
+    "lastContact": "2024-01-11T10:00:00Z"
+  }
+]
