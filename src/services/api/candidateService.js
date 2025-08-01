@@ -39,8 +39,86 @@ class CandidateService {
     }
     this.data[index] = { ...this.data[index], ...updates };
     return { ...this.data[index] };
+}
+
+  // Assignment management methods
+  async assignToClient(candidateId, clientId, assignedBy = "Current User") {
+    await this.delay(400);
+    const candidate = await this.getById(candidateId);
+    
+    if (candidate.status !== 'available') {
+      throw new Error("Only available candidates can be assigned to clients");
+    }
+
+    const assignment = {
+      Id: Date.now(), // Simple ID generation
+      clientId: parseInt(clientId),
+      assignedAt: new Date().toISOString(),
+      assignedBy,
+      status: 'active'
+    };
+
+    const historyEntry = {
+      Id: Date.now() + 1,
+      clientId: parseInt(clientId),
+      assignedAt: new Date().toISOString(),
+      assignedBy,
+      status: 'assigned',
+      endedAt: null,
+      endReason: null
+    };
+
+    const updates = {
+      currentAssignment: assignment,
+      assignmentHistory: [...(candidate.assignmentHistory || []), historyEntry],
+      status: 'assigned'
+    };
+
+    return await this.update(candidateId, updates);
   }
 
+  async unassignFromClient(candidateId, reason = "Unassigned", unassignedBy = "Current User") {
+    await this.delay(400);
+    const candidate = await this.getById(candidateId);
+    
+    if (!candidate.currentAssignment) {
+      throw new Error("Candidate is not currently assigned");
+    }
+
+    // Update assignment history
+    const updatedHistory = candidate.assignmentHistory.map(entry => 
+      entry.status === 'assigned' && !entry.endedAt
+        ? {
+            ...entry,
+            endedAt: new Date().toISOString(),
+            endReason: reason,
+            status: 'completed'
+          }
+        : entry
+    );
+
+    const updates = {
+      currentAssignment: null,
+      assignmentHistory: updatedHistory,
+      status: 'available'
+    };
+
+    return await this.update(candidateId, updates);
+  }
+
+  async getAssignmentHistory(candidateId) {
+    await this.delay(200);
+    const candidate = await this.getById(candidateId);
+    return candidate.assignmentHistory || [];
+  }
+
+  async getAssignedCandidates(clientId) {
+    await this.delay(300);
+    return this.data.filter(candidate => 
+      candidate.currentAssignment && 
+      candidate.currentAssignment.clientId === parseInt(clientId)
+    );
+  }
   async delete(id) {
     await this.delay(250);
     const index = this.data.findIndex(item => item.Id === parseInt(id));

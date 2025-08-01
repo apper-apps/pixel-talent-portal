@@ -10,15 +10,20 @@ import Loading from "@/components/ui/Loading";
 import Error from "@/components/ui/Error";
 import { applicationService } from "@/services/api/applicationService";
 import { candidateService } from "@/services/api/candidateService";
+import { clientService } from "@/services/api/clientService";
 
 const ApplicationDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [application, setApplication] = useState(null);
+const [application, setApplication] = useState(null);
   const [candidate, setCandidate] = useState(null);
+  const [clients, setClients] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [statusUpdating, setStatusUpdating] = useState(false);
+  const [assignmentLoading, setAssignmentLoading] = useState(false);
+  const [selectedClientId, setSelectedClientId] = useState("");
+  const [showAssignmentDialog, setShowAssignmentDialog] = useState(false);
 
   const statusOptions = [
     { value: "New", label: "New", variant: "default" },
@@ -29,9 +34,10 @@ const ApplicationDetail = () => {
   ];
 useEffect(() => {
     loadApplicationDetail();
+    loadClients();
   }, [id]);
 
-  const loadApplicationDetail = async () => {
+const loadApplicationDetail = async () => {
     try {
       setLoading(true);
       setError("");
@@ -56,7 +62,15 @@ useEffect(() => {
     }
   };
 
-  const handleStatusChange = async (newStatus) => {
+  const loadClients = async () => {
+    try {
+      const clientsData = await clientService.getAll();
+      setClients(clientsData.filter(client => client.status === 'active'));
+    } catch (err) {
+      console.error("Failed to load clients:", err);
+    }
+  };
+const handleStatusChange = async (newStatus) => {
     if (!application || newStatus === application.status) return;
     
     try {
@@ -81,8 +95,49 @@ useEffect(() => {
     } finally {
       setStatusUpdating(false);
     }
+};
+
+  const handleAssignToClient = async () => {
+    if (!selectedClientId || !candidate) return;
+    
+    try {
+      setAssignmentLoading(true);
+      await candidateService.assignToClient(candidate.Id, selectedClientId);
+      
+      // Reload candidate data to show updated assignment
+      const updatedCandidate = await candidateService.getById(candidate.Id);
+      setCandidate(updatedCandidate);
+      
+      const client = clients.find(c => c.Id === parseInt(selectedClientId));
+      toast.success(`Successfully assigned ${candidate.name} to ${client?.company}`);
+      
+      setShowAssignmentDialog(false);
+      setSelectedClientId("");
+    } catch (err) {
+      toast.error(err.message || "Failed to assign candidate");
+    } finally {
+      setAssignmentLoading(false);
+    }
   };
 
+  const handleUnassignCandidate = async () => {
+    if (!candidate?.currentAssignment) return;
+    
+    try {
+      setAssignmentLoading(true);
+      await candidateService.unassignFromClient(candidate.Id, "Manual unassignment");
+      
+      // Reload candidate data
+      const updatedCandidate = await candidateService.getById(candidate.Id);
+      setCandidate(updatedCandidate);
+      
+      toast.success(`Successfully unassigned ${candidate.name}`);
+    } catch (err) {
+      toast.error(err.message || "Failed to unassign candidate");
+    } finally {
+      setAssignmentLoading(false);
+    }
+  };
 const getStatusVariant = (status) => {
     switch (status) {
       case "New": return "default";
@@ -195,7 +250,7 @@ const handleBack = () => {
             </div>
           </motion.div>
 
-          {/* Candidate Information */}
+{/* Candidate Information */}
           {candidate && (
             <motion.div
               initial={{ opacity: 0, x: -20 }}
@@ -224,6 +279,7 @@ const handleBack = () => {
                   <label className="text-sm font-medium text-gray-500">Current Status</label>
                   <div className="mt-1">
                     <Badge variant={candidate.status === 'available' ? 'success' : 
+                                  candidate.status === 'assigned' ? 'primary' :
                                   candidate.status === 'hired' ? 'primary' : 
                                   candidate.status === 'interviewing' ? 'warning' : 'default'}>
                       {candidate.status.charAt(0).toUpperCase() + candidate.status.slice(1)}
@@ -233,8 +289,159 @@ const handleBack = () => {
               </div>
             </motion.div>
           )}
-        </div>
 
+          {/* Assignment Management */}
+          {candidate && application?.status === 'Approved' && (
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.2 }}
+              className="bg-white rounded-lg border border-gray-200 p-6"
+            >
+              <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center">
+                <ApperIcon name="Building2" size={20} className="mr-2" />
+                Client Assignment
+              </h2>
+
+              {/* Current Assignment */}
+              {candidate.currentAssignment ? (
+                <div className="bg-blue-50 rounded-lg p-4 mb-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="font-medium text-blue-900 mb-1">Currently Assigned</h3>
+                      <p className="text-blue-700">
+                        {clients.find(c => c.Id === candidate.currentAssignment.clientId)?.company || 'Unknown Client'}
+                      </p>
+                      <p className="text-sm text-blue-600 mt-1">
+                        Assigned on {format(new Date(candidate.currentAssignment.assignedAt), 'MMM d, yyyy')}
+                      </p>
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleUnassignCandidate}
+                      disabled={assignmentLoading}
+                      className="text-red-600 border-red-200 hover:bg-red-50"
+                    >
+                      {assignmentLoading ? (
+                        <ApperIcon name="Loader2" size={16} className="animate-spin" />
+                      ) : (
+                        <>
+                          <ApperIcon name="X" size={16} className="mr-1" />
+                          Unassign
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <div className="bg-gray-50 rounded-lg p-4 mb-4">
+                  <p className="text-gray-600 text-center">No current client assignment</p>
+                </div>
+              )}
+
+              {/* Assignment Actions */}
+              {!candidate.currentAssignment && candidate.status === 'available' && (
+                <div className="space-y-4">
+                  {!showAssignmentDialog ? (
+                    <Button
+                      onClick={() => setShowAssignmentDialog(true)}
+                      className="w-full"
+                    >
+                      <ApperIcon name="Plus" size={16} className="mr-2" />
+                      Assign to Client
+                    </Button>
+                  ) : (
+                    <div className="space-y-4 border border-gray-200 rounded-lg p-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Select Client
+                        </label>
+                        <select
+                          value={selectedClientId}
+                          onChange={(e) => setSelectedClientId(e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        >
+                          <option value="">Choose a client...</option>
+                          {clients.map(client => (
+                            <option key={client.Id} value={client.Id}>
+                              {client.company} - {client.industry}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                      <div className="flex space-x-2">
+                        <Button
+                          onClick={handleAssignToClient}
+                          disabled={!selectedClientId || assignmentLoading}
+                          className="flex-1"
+                        >
+                          {assignmentLoading ? (
+                            <ApperIcon name="Loader2" size={16} className="mr-2 animate-spin" />
+                          ) : (
+                            <ApperIcon name="Check" size={16} className="mr-2" />
+                          )}
+                          Confirm Assignment
+                        </Button>
+                        <Button
+                          variant="outline"
+                          onClick={() => {
+                            setShowAssignmentDialog(false);
+                            setSelectedClientId("");
+                          }}
+                          disabled={assignmentLoading}
+                        >
+                          Cancel
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Assignment History */}
+              {candidate.assignmentHistory && candidate.assignmentHistory.length > 0 && (
+                <div className="mt-6">
+                  <h3 className="font-medium text-gray-900 mb-3">Assignment History</h3>
+                  <div className="space-y-3">
+                    {candidate.assignmentHistory
+                      .sort((a, b) => new Date(b.assignedAt) - new Date(a.assignedAt))
+                      .map((assignment) => {
+                        const client = clients.find(c => c.Id === assignment.clientId);
+                        return (
+                          <div key={assignment.Id} className="border border-gray-200 rounded-lg p-3">
+                            <div className="flex items-center justify-between">
+                              <div>
+                                <p className="font-medium text-gray-900">
+                                  {client?.company || 'Unknown Client'}
+                                </p>
+                                <p className="text-sm text-gray-600">
+                                  {format(new Date(assignment.assignedAt), 'MMM d, yyyy')}
+                                  {assignment.endedAt && (
+                                    <span> - {format(new Date(assignment.endedAt), 'MMM d, yyyy')}</span>
+                                  )}
+                                </p>
+                              </div>
+                              <Badge 
+                                variant={assignment.status === 'assigned' ? 'primary' : 'default'}
+                              >
+                                {assignment.status === 'assigned' ? 'Active' : 'Completed'}
+                              </Badge>
+                            </div>
+                            {assignment.endReason && (
+                              <p className="text-sm text-gray-500 mt-1">
+                                Reason: {assignment.endReason}
+                              </p>
+                            )}
+                          </div>
+                        );
+                      })}
+                  </div>
+                </div>
+              )}
+            </motion.div>
+          )}
+        </div>
         {/* Sidebar */}
         <div className="space-y-6">
           {/* Skills */}
