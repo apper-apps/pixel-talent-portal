@@ -31,14 +31,34 @@ class ClientService {
     return { ...newClient };
   }
 
-  async update(id, updates) {
+async update(id, updates) {
     await this.delay(350);
     const index = this.data.findIndex(item => item.Id === parseInt(id));
     if (index === -1) {
       throw new Error("Client not found");
     }
-    this.data[index] = { ...this.data[index], ...updates };
+    this.data[index] = { 
+      ...this.data[index], 
+      ...updates,
+      lastContact: new Date().toISOString()
+    };
     return { ...this.data[index] };
+  }
+
+  async logCommunication(clientId, communicationData) {
+    await this.delay(400);
+    const { communicationService } = await import('./communicationService');
+    return await communicationService.create({
+      entityType: 'client',
+      entityId: parseInt(clientId),
+      ...communicationData
+    });
+  }
+
+  async getCommunications(clientId) {
+    await this.delay(300);
+    const { communicationService } = await import('./communicationService');
+    return await communicationService.getByEntity('client', parseInt(clientId));
   }
 
   async delete(id) {

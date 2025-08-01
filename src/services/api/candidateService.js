@@ -32,15 +32,35 @@ async create(candidate) {
     return { ...newCandidate };
   }
 
-  async update(id, updates) {
+async update(id, updates) {
     await this.delay(350);
     const index = this.data.findIndex(item => item.Id === parseInt(id));
     if (index === -1) {
       throw new Error("Candidate not found");
     }
-    this.data[index] = { ...this.data[index], ...updates };
+    this.data[index] = { 
+      ...this.data[index], 
+      ...updates,
+      lastContact: new Date().toISOString()
+    };
     return { ...this.data[index] };
-}
+  }
+
+  async logCommunication(candidateId, communicationData) {
+    await this.delay(400);
+    const { communicationService } = await import('./communicationService');
+    return await communicationService.create({
+      entityType: 'candidate',
+      entityId: parseInt(candidateId),
+      ...communicationData
+    });
+  }
+
+  async getCommunications(candidateId) {
+    await this.delay(300);
+    const { communicationService } = await import('./communicationService');
+    return await communicationService.getByEntity('candidate', parseInt(candidateId));
+  }
 
   // Assignment management methods
   async assignToClient(candidateId, clientId, assignedBy = "Current User") {
@@ -138,6 +158,14 @@ async updateInterviewStatus(candidateId, interviewStatus) {
       interviewStatus,
       lastContact: new Date().toISOString()
     };
+
+    // Log the status change as communication
+    await this.logCommunication(candidateId, {
+      communicationType: 'Internal Note',
+      subject: `Interview status updated to ${interviewStatus}`,
+      content: `Interview status changed from "${candidate.interviewStatus || 'Pending Interview'}" to "${interviewStatus}"`,
+      priority: 'normal'
+    });
 
     return this.update(candidateId, updates);
   }

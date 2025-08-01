@@ -53,7 +53,7 @@ this.data[index] = updatedItem;
     return { ...this.data[index] };
   }
 
-  async addNote(applicationId, note) {
+async addNote(applicationId, note) {
     await this.delay(400);
     const { notesService } = await import('./notesService');
     return await notesService.create({
@@ -72,6 +72,22 @@ this.data[index] = updatedItem;
     await this.delay(250);
     const { notesService } = await import('./notesService');
     return await notesService.delete(noteId);
+  }
+
+  async logCommunication(applicationId, communicationData) {
+    await this.delay(400);
+    const { communicationService } = await import('./communicationService');
+    return await communicationService.create({
+      entityType: 'application',
+      entityId: parseInt(applicationId),
+      ...communicationData
+    });
+  }
+
+  async getCommunications(applicationId) {
+    await this.delay(300);
+    const { communicationService } = await import('./communicationService');
+    return await communicationService.getByEntity('application', parseInt(applicationId));
   }
 
   async delete(id) {

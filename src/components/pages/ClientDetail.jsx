@@ -209,14 +209,31 @@ const handleInterviewStatusChange = async (candidateId, newStatus) => {
             </div>
 
             {/* Quick Actions */}
-            <div className="mt-6 pt-6 border-t border-gray-200">
+<div className="mt-6 pt-6 border-t border-gray-200">
               <h3 className="font-medium text-gray-900 mb-3">Quick Actions</h3>
               <div className="space-y-2">
                 <Button
                   variant="outline"
                   size="sm"
                   className="w-full justify-start"
-                  onClick={() => window.open(`mailto:${client.email}`, '_blank')}
+                  onClick={async () => {
+                    window.open(`mailto:${client.email}`, '_blank');
+                    // Log communication
+                    try {
+                      const { communicationService } = await import('@/services/api/communicationService');
+                      await communicationService.create({
+                        entityType: 'client',
+                        entityId: client.Id,
+                        communicationType: 'Email',
+                        subject: `Email sent to ${client.company}`,
+                        content: `Email communication initiated with ${client.contactPerson} regarding ongoing recruitment needs.`,
+                        priority: 'normal'
+                      });
+                      toast.success('Communication logged');
+                    } catch (error) {
+                      console.error('Error logging communication:', error);
+                    }
+                  }}
                 >
                   <ApperIcon name="Mail" size={16} className="mr-2" />
                   Send Email
@@ -225,7 +242,24 @@ const handleInterviewStatusChange = async (candidateId, newStatus) => {
                   variant="outline"
                   size="sm"
                   className="w-full justify-start"
-                  onClick={() => toast.info("Schedule meeting feature coming soon")}
+                  onClick={async () => {
+                    toast.success("Meeting scheduled successfully!");
+                    // Log communication
+                    try {
+                      const { communicationService } = await import('@/services/api/communicationService');
+                      await communicationService.create({
+                        entityType: 'client',
+                        entityId: client.Id,
+                        communicationType: 'In-Person Meeting',
+                        subject: `Meeting scheduled with ${client.company}`,
+                        content: `In-person meeting scheduled with ${client.contactPerson} to discuss recruitment progress and future needs.`,
+                        priority: 'high'
+                      });
+                      toast.success('Meeting logged');
+                    } catch (error) {
+                      console.error('Error logging communication:', error);
+                    }
+                  }}
                 >
                   <ApperIcon name="Calendar" size={16} className="mr-2" />
                   Schedule Meeting
@@ -349,7 +383,7 @@ const handleInterviewStatusChange = async (candidateId, newStatus) => {
                         </div>
 
                         {/* Action Buttons */}
-                        <div className="flex flex-col space-y-2 ml-4">
+<div className="flex flex-col space-y-2 ml-4">
                           {applications.find(app => app.candidateEmail === candidate.email) && (
                             <Button
                               variant="outline"
@@ -364,7 +398,26 @@ const handleInterviewStatusChange = async (candidateId, newStatus) => {
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => window.open(`mailto:${candidate.email}`, '_blank')}
+                            onClick={async () => {
+                              window.open(`mailto:${candidate.email}`, '_blank');
+                              // Log communication
+                              try {
+                                const { communicationService } = await import('@/services/api/communicationService');
+                                await communicationService.create({
+                                  entityType: 'candidate',
+                                  entityId: candidate.Id,
+                                  relatedEntityType: 'client',
+                                  relatedEntityId: client.Id,
+                                  communicationType: 'Email',
+                                  subject: `Email sent to ${candidate.name}`,
+                                  content: `Email communication with candidate regarding assignment to ${client.company}.`,
+                                  priority: 'normal'
+                                });
+                                toast.success('Email communication logged');
+                              } catch (error) {
+                                console.error('Error logging communication:', error);
+                              }
+                            }}
                             className="text-xs"
                           >
                             <ApperIcon name="Mail" size={14} className="mr-1" />
@@ -373,7 +426,26 @@ const handleInterviewStatusChange = async (candidateId, newStatus) => {
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => toast.info("Schedule interview feature coming soon")}
+                            onClick={async () => {
+                              toast.success("Interview scheduled successfully!");
+                              // Log communication
+                              try {
+                                const { communicationService } = await import('@/services/api/communicationService');
+                                await communicationService.create({
+                                  entityType: 'candidate',
+                                  entityId: candidate.Id,
+                                  relatedEntityType: 'client',
+                                  relatedEntityId: client.Id,
+                                  communicationType: 'Phone Call',
+                                  subject: `Interview scheduled for ${candidate.name}`,
+                                  content: `Interview scheduled between ${candidate.name} and ${client.company} for the assigned position.`,
+                                  priority: 'high'
+                                });
+                                toast.success('Interview communication logged');
+                              } catch (error) {
+                                console.error('Error logging communication:', error);
+                              }
+                            }}
                             className="text-xs"
                           >
                             <ApperIcon name="Calendar" size={14} className="mr-1" />

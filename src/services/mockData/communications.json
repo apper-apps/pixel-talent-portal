@@ -1,0 +1,72 @@
+[
+  {
+    "Id": 1,
+    "entityType": "candidate",
+    "entityId": 1,
+    "relatedEntityType": "client",
+    "relatedEntityId": 1,
+    "communicationType": "Email",
+    "subject": "Interview scheduling for Senior Developer position",
+    "content": "Coordinated with client for technical interview scheduling. Candidate is available Tuesday-Thursday afternoons.",
+    "timestamp": "2024-01-15T10:30:00Z",
+    "createdBy": "Sarah Johnson",
+    "priority": "normal",
+    "status": "completed"
+  },
+  {
+    "Id": 2,
+    "entityType": "candidate",
+    "entityId": 2,
+    "relatedEntityType": "client",
+    "relatedEntityId": 2,
+    "communicationType": "Phone Call",
+    "subject": "Follow-up on interview feedback",
+    "content": "Discussed interview performance with client. Positive feedback on technical skills, concerns about communication style.",
+    "timestamp": "2024-01-14T14:15:00Z",
+    "createdBy": "Mike Chen",
+    "priority": "high",
+    "status": "completed"
+  },
+  {
+    "Id": 3,
+    "entityType": "client",
+    "entityId": 1,
+    "relatedEntityType": "candidate",
+    "relatedEntityId": 3,
+    "communicationType": "Video Call",
+    "subject": "Candidate presentation and discussion",
+    "content": "Presented top 3 candidates for the Project Manager role. Client showed strong interest in candidate #3.",
+    "timestamp": "2024-01-13T11:00:00Z",
+    "createdBy": "Jennifer Davis",
+    "priority": "normal",
+    "status": "completed"
+  },
+  {
+    "Id": 4,
+    "entityType": "candidate",
+    "entityId": 1,
+    "relatedEntityType": "application",
+    "relatedEntityId": 1,
+    "communicationType": "Internal Note",
+    "subject": "Reference check completed",
+    "content": "All references contacted. Excellent feedback from previous employers. Recommended for hire.",
+    "timestamp": "2024-01-12T16:45:00Z",
+    "createdBy": "HR Team",
+    "priority": "normal",
+    "status": "completed"
+  },
+  {
+    "Id": 5,
+    "entityType": "client",
+    "entityId": 2,
+    "relatedEntityType": null,
+    "relatedEntityId": null,
+    "communicationType": "In-Person Meeting",
+    "subject": "Quarterly talent review meeting",
+    "content": "Discussed ongoing hiring needs, updated job requirements, and reviewed performance of recently placed candidates.",
+    "timestamp": "2024-01-11T09:30:00Z",
+    "createdBy": "Account Manager",
+    "priority": "normal",
+    "status": "completed"
+  }
+]

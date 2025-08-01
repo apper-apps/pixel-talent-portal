@@ -1,17 +1,19 @@
-import { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { toast } from "react-toastify";
 import { format } from "date-fns";
+import { notesService } from "@/services/api/notesService";
+import { applicationService } from "@/services/api/applicationService";
+import { clientService } from "@/services/api/clientService";
+import { candidateService } from "@/services/api/candidateService";
 import ApperIcon from "@/components/ApperIcon";
+import FormField from "@/components/molecules/FormField";
+import Loading from "@/components/ui/Loading";
+import Error from "@/components/ui/Error";
+import Applications from "@/components/pages/Applications";
 import Badge from "@/components/atoms/Badge";
 import Button from "@/components/atoms/Button";
-import Loading from "@/components/ui/Loading";
-import FormField from "@/components/molecules/FormField";
-import Error from "@/components/ui/Error";
-import { applicationService } from "@/services/api/applicationService";
-import { candidateService } from "@/services/api/candidateService";
-import { clientService } from "@/services/api/clientService";
 
 const ApplicationDetail = () => {
   const { id } = useParams();
@@ -25,11 +27,19 @@ const [application, setApplication] = useState(null);
   const [assignmentLoading, setAssignmentLoading] = useState(false);
   const [selectedClientId, setSelectedClientId] = useState("");
 const [showAssignmentDialog, setShowAssignmentDialog] = useState(false);
-  const [notes, setNotes] = useState([]);
+const [notes, setNotes] = useState([]);
   const [notesLoading, setNotesLoading] = useState(true);
   const [showAddNote, setShowAddNote] = useState(false);
   const [newNote, setNewNote] = useState({ content: '', type: 'General' });
   const [editingNote, setEditingNote] = useState(null);
+  const [communications, setCommunications] = useState([]);
+  const [showAddCommunication, setShowAddCommunication] = useState(false);
+  const [newCommunication, setNewCommunication] = useState({
+    communicationType: 'Email',
+    subject: '',
+    content: '',
+    priority: 'normal'
+  });
 
   const statusOptions = [
     { value: "New", label: "New", variant: "default" },
@@ -159,7 +169,7 @@ setAssignmentLoading(false);
     }
   };
 
-  const handleAddNote = async () => {
+const handleAddNote = async () => {
     if (!newNote.content.trim()) {
       toast.error('Please enter note content');
       return;
@@ -180,6 +190,47 @@ setAssignmentLoading(false);
     } catch (error) {
       console.error('Error adding note:', error);
       toast.error('Failed to add note');
+    }
+  };
+
+  const handleAddCommunication = async () => {
+    if (!newCommunication.subject.trim() || !newCommunication.content.trim()) {
+      toast.error('Please enter communication subject and content');
+      return;
+    }
+
+    try {
+      const { communicationService } = await import('@/services/api/communicationService');
+      await communicationService.create({
+        entityType: 'application',
+        entityId: parseInt(id),
+        relatedEntityType: 'candidate',
+        relatedEntityId: application?.candidateId,
+        ...newCommunication
+      });
+      
+      setNewCommunication({
+        communicationType: 'Email',
+        subject: '',
+        content: '',
+        priority: 'normal'
+      });
+      setShowAddCommunication(false);
+      await loadCommunications();
+      toast.success('Communication logged successfully');
+    } catch (error) {
+      console.error('Error logging communication:', error);
+      toast.error('Failed to log communication');
+    }
+  };
+
+  const loadCommunications = async () => {
+    try {
+      const { communicationService } = await import('@/services/api/communicationService');
+      const communicationsData = await communicationService.getByEntity('application', parseInt(id));
+      setCommunications(communicationsData);
+    } catch (error) {
+      console.error('Error loading communications:', error);
     }
   };
 
@@ -550,7 +601,7 @@ const handleBack = () => {
                   exit={{ opacity: 0, height: 0 }}
                 >
                   <div className="space-y-3">
-                    <FormField
+<FormField
                       label="Note Type"
                       type="select"
                       value={newNote.type}
@@ -590,6 +641,135 @@ const handleBack = () => {
                   </div>
                 </motion.div>
               )}
+
+              {/* Communication Tracking */}
+              <div className="mt-8">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-semibold text-gray-900 flex items-center">
+                    <ApperIcon name="MessageSquare" size={20} className="mr-2" />
+                    Communication Log
+                  </h3>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowAddCommunication(true)}
+                  >
+                    <ApperIcon name="Plus" size={16} className="mr-2" />
+                    Log Communication
+                  </Button>
+                </div>
+
+                {showAddCommunication && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    className="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200"
+                  >
+                    <h4 className="font-medium text-gray-900 mb-3">Log New Communication</h4>
+                    <div className="space-y-4">
+                      <FormField
+                        label="Communication Type"
+                        type="select"
+                        value={newCommunication.communicationType}
+                        onChange={(e) => setNewCommunication({ ...newCommunication, communicationType: e.target.value })}
+                        options={[
+                          { value: 'Email', label: 'Email' },
+                          { value: 'Phone Call', label: 'Phone Call' },
+                          { value: 'Video Call', label: 'Video Call' },
+                          { value: 'In-Person Meeting', label: 'In-Person Meeting' },
+                          { value: 'Internal Note', label: 'Internal Note' }
+                        ]}
+                      />
+                      <FormField
+                        label="Subject"
+                        value={newCommunication.subject}
+                        onChange={(e) => setNewCommunication({ ...newCommunication, subject: e.target.value })}
+                        placeholder="Brief description of the communication..."
+                      />
+                      <FormField
+                        label="Details"
+                        multiline
+                        rows={3}
+                        value={newCommunication.content}
+                        onChange={(e) => setNewCommunication({ ...newCommunication, content: e.target.value })}
+                        placeholder="Detailed notes about the communication..."
+                      />
+                      <FormField
+                        label="Priority"
+                        type="select"
+                        value={newCommunication.priority}
+                        onChange={(e) => setNewCommunication({ ...newCommunication, priority: e.target.value })}
+                        options={[
+                          { value: 'low', label: 'Low' },
+                          { value: 'normal', label: 'Normal' },
+                          { value: 'high', label: 'High' },
+                          { value: 'urgent', label: 'Urgent' }
+                        ]}
+                      />
+                      <div className="flex gap-2">
+                        <Button onClick={handleAddCommunication} size="sm">
+                          Log Communication
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => {
+                            setShowAddCommunication(false);
+                            setNewCommunication({
+                              communicationType: 'Email',
+                              subject: '',
+                              content: '',
+                              priority: 'normal'
+                            });
+                          }}
+                        >
+                          Cancel
+                        </Button>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+
+                {/* Communications List */}
+                <div className="space-y-3">
+                  {communications.map((comm, index) => (
+                    <motion.div
+                      key={comm.Id}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: index * 0.05 }}
+                      className="bg-white rounded-lg border border-gray-200 p-4"
+                    >
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center space-x-2 mb-2">
+                            <Badge variant="outline">
+                              {comm.communicationType}
+                            </Badge>
+                            <Badge variant={comm.priority === 'high' || comm.priority === 'urgent' ? 'error' : 'default'}>
+                              {comm.priority}
+                            </Badge>
+                            <span className="text-sm text-gray-500">
+                              {format(new Date(comm.timestamp), "MMM dd, yyyy 'at' h:mm a")}
+                            </span>
+                          </div>
+                          <h4 className="font-medium text-gray-900 mb-1">{comm.subject}</h4>
+                          <p className="text-gray-700 text-sm">{comm.content}</p>
+                          <p className="text-xs text-gray-500 mt-2">
+                            Logged by {comm.createdBy}
+                          </p>
+                        </div>
+                      </div>
+                    </motion.div>
+                  ))}
+                  {communications.length === 0 && (
+                    <div className="text-center py-8 text-gray-500">
+                      <ApperIcon name="MessageSquare" size={32} className="mx-auto mb-2 opacity-50" />
+                      <p>No communications logged yet</p>
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
 
             {/* Notes List */}
@@ -748,11 +928,23 @@ const handleBack = () => {
               <Button
                 variant="outline"
                 size="sm"
-                className="w-full justify-start"
-                onClick={() => window.open(`mailto:${application.candidateEmail}`, '_blank')}
+className="w-full justify-start"
+                onClick={() => {
+                  window.open(`mailto:${application.candidateEmail}`, '_blank');
+                  // Auto-populate communication log
+                  setTimeout(() => {
+                    setNewCommunication({
+                      communicationType: 'Email',
+                      subject: `Email sent to ${application.candidateName}`,
+                      content: `Email communication initiated regarding application for ${application.jobTitle}`,
+                      priority: 'normal'
+                    });
+                    setShowAddCommunication(true);
+                  }, 1000);
+                }}
               >
                 <ApperIcon name="Mail" size={16} className="mr-2" />
-                Send Email
+Send Email
               </Button>
             </div>
           </motion.div>
@@ -770,7 +962,17 @@ const handleBack = () => {
                 variant="primary"
                 size="sm"
                 className="w-full"
-                onClick={() => toast.success("Interview scheduled successfully!")}
+onClick={() => {
+                  toast.success("Interview scheduled successfully!");
+                  // Auto-populate communication log
+                  setNewCommunication({
+                    communicationType: 'Phone Call',
+                    subject: `Interview scheduled with ${application.candidateName}`,
+                    content: `Interview scheduled for ${application.jobTitle} position. Candidate and client notified.`,
+                    priority: 'high'
+                  });
+                  setShowAddCommunication(true);
+                }}
               >
                 Schedule Interview
               </Button>
