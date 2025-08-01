@@ -130,7 +130,7 @@ const updates = {
     return { ...deleted };
 }
 
-  async updateInterviewStatus(candidateId, interviewStatus) {
+async updateInterviewStatus(candidateId, interviewStatus) {
     await this.delay(300);
     const candidate = await this.getById(candidateId);
     

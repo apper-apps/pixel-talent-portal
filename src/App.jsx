@@ -6,18 +6,19 @@ import Applications from "@/components/pages/Applications";
 import Candidates from "@/components/pages/Candidates";
 import Clients from "@/components/pages/Clients";
 import ClientDetail from "@/components/pages/ClientDetail";
-
+import Assignments from "@/components/pages/Assignments";
 function App() {
   return (
     <BrowserRouter>
       <div className="App">
-        <Routes>
+<Routes>
 <Route path="/" element={<Layout />}>
             <Route index element={<JobPostings />} />
             <Route path="applications/*" element={<Applications />} />
             <Route path="candidates" element={<Candidates />} />
             <Route path="clients" element={<Clients />} />
             <Route path="clients/:id" element={<ClientDetail />} />
+            <Route path="assignments" element={<Assignments />} />
           </Route>
         </Routes>
         

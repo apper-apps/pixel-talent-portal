@@ -3,11 +3,12 @@ import NavItem from "@/components/molecules/NavItem";
 import ApperIcon from "@/components/ApperIcon";
 
 const Sidebar = ({ isMobileMenuOpen, onMobileMenuClose }) => {
-  const navigationItems = [
+const navigationItems = [
     { to: "/", icon: "Briefcase", label: "Job Postings" },
     { to: "/applications", icon: "FileText", label: "Applications" },
     { to: "/candidates", icon: "Users", label: "Candidates" },
-    { to: "/clients", icon: "Building2", label: "Clients" }
+    { to: "/clients", icon: "Building2", label: "Clients" },
+    { to: "/assignments", icon: "UserCheck", label: "Assignments" }
   ];
 
   // Desktop Sidebar (Static)
