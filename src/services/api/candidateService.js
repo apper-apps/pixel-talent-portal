@@ -142,6 +142,11 @@ const updates = {
     return this.update(candidateId, updates);
   }
 
+async getHiredCandidates() {
+    await this.delay(300);
+    return this.data.filter(candidate => candidate.status === 'hired');
+  }
+
   delay(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
   }
