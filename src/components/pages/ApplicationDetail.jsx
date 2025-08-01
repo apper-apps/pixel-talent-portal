@@ -7,6 +7,7 @@ import ApperIcon from "@/components/ApperIcon";
 import Badge from "@/components/atoms/Badge";
 import Button from "@/components/atoms/Button";
 import Loading from "@/components/ui/Loading";
+import FormField from "@/components/molecules/FormField";
 import Error from "@/components/ui/Error";
 import { applicationService } from "@/services/api/applicationService";
 import { candidateService } from "@/services/api/candidateService";
@@ -23,7 +24,12 @@ const [application, setApplication] = useState(null);
   const [statusUpdating, setStatusUpdating] = useState(false);
   const [assignmentLoading, setAssignmentLoading] = useState(false);
   const [selectedClientId, setSelectedClientId] = useState("");
-  const [showAssignmentDialog, setShowAssignmentDialog] = useState(false);
+const [showAssignmentDialog, setShowAssignmentDialog] = useState(false);
+  const [notes, setNotes] = useState([]);
+  const [notesLoading, setNotesLoading] = useState(true);
+  const [showAddNote, setShowAddNote] = useState(false);
+  const [newNote, setNewNote] = useState({ content: '', type: 'General' });
+  const [editingNote, setEditingNote] = useState(null);
 
   const statusOptions = [
     { value: "New", label: "New", variant: "default" },
@@ -43,8 +49,8 @@ const loadApplicationDetail = async () => {
       setError("");
       
       const applicationData = await applicationService.getById(parseInt(id));
-      setApplication(applicationData);
-
+setApplication(applicationData);
+      await loadNotes();
       // Find candidate by matching email
       const allCandidates = await candidateService.getAll();
       const matchedCandidate = allCandidates.find(
@@ -135,9 +141,77 @@ const handleStatusChange = async (newStatus) => {
     } catch (err) {
       toast.error(err.message || "Failed to unassign candidate");
     } finally {
-      setAssignmentLoading(false);
+setAssignmentLoading(false);
     }
   };
+
+  const loadNotes = async () => {
+    try {
+      setNotesLoading(true);
+      const { notesService } = await import('@/services/api/notesService');
+      const notesData = await notesService.getByApplicationId(id);
+      setNotes(notesData);
+    } catch (error) {
+      console.error('Error loading notes:', error);
+      toast.error('Failed to load notes');
+    } finally {
+      setNotesLoading(false);
+    }
+  };
+
+  const handleAddNote = async () => {
+    if (!newNote.content.trim()) {
+      toast.error('Please enter note content');
+      return;
+    }
+
+    try {
+      const { notesService } = await import('@/services/api/notesService');
+      await notesService.create({
+        applicationId: parseInt(id),
+        content: newNote.content.trim(),
+        type: newNote.type
+      });
+      
+      setNewNote({ content: '', type: 'General' });
+      setShowAddNote(false);
+      await loadNotes();
+      toast.success('Note added successfully');
+    } catch (error) {
+      console.error('Error adding note:', error);
+      toast.error('Failed to add note');
+    }
+  };
+
+  const handleEditNote = async (noteId, updates) => {
+    try {
+      const { notesService } = await import('@/services/api/notesService');
+      await notesService.update(noteId, updates);
+      await loadNotes();
+      setEditingNote(null);
+      toast.success('Note updated successfully');
+    } catch (error) {
+      console.error('Error updating note:', error);
+      toast.error('Failed to update note');
+    }
+  };
+
+  const handleDeleteNote = async (noteId) => {
+    if (!window.confirm('Are you sure you want to delete this note?')) {
+      return;
+    }
+
+    try {
+      const { notesService } = await import('@/services/api/notesService');
+      await notesService.delete(noteId);
+      await loadNotes();
+      toast.success('Note deleted successfully');
+    } catch (error) {
+      console.error('Error deleting note:', error);
+      toast.error('Failed to delete note');
+    }
+  };
+
 const getStatusVariant = (status) => {
     switch (status) {
       case "New": return "default";
@@ -438,12 +512,187 @@ const handleBack = () => {
                       })}
                   </div>
                 </div>
-              )}
+)}
             </motion.div>
           )}
         </div>
         {/* Sidebar */}
         <div className="space-y-6">
+          {/* Internal Notes Section */}
+          <motion.div 
+            className="bg-white rounded-lg border border-gray-200 shadow-sm"
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.3 }}
+          >
+            <div className="p-6 border-b border-gray-200">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2">
+                  <ApperIcon name="FileText" size={20} className="text-gray-600" />
+                  <h3 className="text-lg font-semibold text-gray-900">Internal Notes</h3>
+                </div>
+                <Button
+                  size="sm"
+                  onClick={() => setShowAddNote(!showAddNote)}
+                  className="flex items-center gap-2"
+                >
+                  <ApperIcon name="Plus" size={16} />
+                  Add Note
+                </Button>
+              </div>
+
+              {/* Add Note Form */}
+              {showAddNote && (
+                <motion.div 
+                  className="mb-4 p-4 bg-gray-50 rounded-lg border"
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  exit={{ opacity: 0, height: 0 }}
+                >
+                  <div className="space-y-3">
+                    <FormField
+                      label="Note Type"
+                      type="select"
+                      value={newNote.type}
+                      onChange={(e) => setNewNote({ ...newNote, type: e.target.value })}
+                      options={[
+                        { value: 'General', label: 'General' },
+                        { value: 'Interview', label: 'Interview' },
+                        { value: 'Communication', label: 'Communication' },
+                        { value: 'Assessment', label: 'Assessment' },
+                        { value: 'Reference Check', label: 'Reference Check' },
+                        { value: 'Offer', label: 'Offer' }
+                      ]}
+                    />
+                    <FormField
+                      label="Note Content"
+                      multiline
+                      rows={3}
+                      value={newNote.content}
+                      onChange={(e) => setNewNote({ ...newNote, content: e.target.value })}
+                      placeholder="Enter your note about this candidate..."
+                    />
+                    <div className="flex gap-2">
+                      <Button onClick={handleAddNote} size="sm">
+                        Save Note
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => {
+                          setShowAddNote(false);
+                          setNewNote({ content: '', type: 'General' });
+                        }}
+                      >
+                        Cancel
+                      </Button>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </div>
+
+            {/* Notes List */}
+            <div className="p-6">
+              {notesLoading ? (
+                <div className="flex items-center justify-center py-8">
+                  <Loading size="sm" />
+                </div>
+              ) : notes.length === 0 ? (
+                <div className="text-center py-8">
+                  <ApperIcon name="FileText" size={48} className="text-gray-300 mx-auto mb-3" />
+                  <p className="text-gray-500 text-sm">No internal notes yet</p>
+                  <p className="text-gray-400 text-xs mt-1">Add a note to track communication and feedback</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {notes.map((note, index) => (
+                    <motion.div
+                      key={note.Id}
+                      className="border border-gray-200 rounded-lg p-4 bg-gray-50"
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: index * 0.1 }}
+                    >
+                      <div className="flex items-start justify-between mb-2">
+                        <div className="flex items-center gap-2">
+                          <Badge variant="outline" className="text-xs">
+                            {note.type}
+                          </Badge>
+                          <span className="text-sm font-medium text-gray-700">
+                            {note.author}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <button
+                            onClick={() => setEditingNote(editingNote === note.Id ? null : note.Id)}
+                            className="text-gray-400 hover:text-primary-600 p-1"
+                          >
+                            <ApperIcon name="Edit2" size={14} />
+                          </button>
+                          <button
+                            onClick={() => handleDeleteNote(note.Id)}
+                            className="text-gray-400 hover:text-red-600 p-1"
+                          >
+                            <ApperIcon name="Trash2" size={14} />
+                          </button>
+                        </div>
+                      </div>
+                      
+                      {editingNote === note.Id ? (
+                        <div className="space-y-3">
+                          <FormField
+                            multiline
+                            rows={3}
+                            value={note.content}
+                            onChange={(e) => {
+                              const updatedNotes = notes.map(n => 
+                                n.Id === note.Id ? { ...n, content: e.target.value } : n
+                              );
+                              setNotes(updatedNotes);
+                            }}
+                          />
+                          <div className="flex gap-2">
+                            <Button 
+                              size="sm"
+                              onClick={() => handleEditNote(note.Id, { content: note.content })}
+                            >
+                              Save
+                            </Button>
+                            <Button 
+                              variant="outline" 
+                              size="sm"
+                              onClick={() => {
+                                setEditingNote(null);
+                                loadNotes(); // Reload to reset changes
+                              }}
+                            >
+                              Cancel
+                            </Button>
+                          </div>
+                        </div>
+                      ) : (
+                        <>
+                          <p className="text-sm text-gray-600 mb-2 leading-relaxed">
+                            {note.content}
+                          </p>
+                          <div className="flex items-center gap-2 text-xs text-gray-500">
+                            <ApperIcon name="Clock" size={12} />
+                            <span>
+                              {format(new Date(note.createdAt), 'MMM d, yyyy • h:mm a')}
+                            </span>
+                            {note.updatedAt && (
+                              <span className="text-gray-400">• edited</span>
+                            )}
+                          </div>
+                        </>
+                      )}
+                    </motion.div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </motion.div>
           {/* Skills */}
           {candidate && candidate.skills && (
             <motion.div

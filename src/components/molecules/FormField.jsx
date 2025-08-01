@@ -1,4 +1,4 @@
-import Label from "@/components/atoms/Label";
+import Label from '@/components/atoms/Label'
 import Input from "@/components/atoms/Input";
 import Textarea from "@/components/atoms/Textarea";
 import { cn } from "@/utils/cn";

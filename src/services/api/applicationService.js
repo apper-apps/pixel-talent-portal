@@ -49,8 +49,29 @@ async update(id, updates) {
       }
     }
     
-    this.data[index] = updatedItem;
+this.data[index] = updatedItem;
     return { ...this.data[index] };
+  }
+
+  async addNote(applicationId, note) {
+    await this.delay(400);
+    const { notesService } = await import('./notesService');
+    return await notesService.create({
+      applicationId: parseInt(applicationId),
+      ...note
+    });
+  }
+
+  async updateNote(noteId, updates) {
+    await this.delay(400);
+    const { notesService } = await import('./notesService');
+    return await notesService.update(noteId, updates);
+  }
+
+  async deleteNote(noteId) {
+    await this.delay(250);
+    const { notesService } = await import('./notesService');
+    return await notesService.delete(noteId);
   }
 
   async delete(id) {
