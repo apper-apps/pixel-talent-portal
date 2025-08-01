@@ -12,6 +12,10 @@ const Candidates = () => {
   const [candidates, setCandidates] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [activeView, setActiveView] = useState('pool');
+  const [hiredCandidates, setHiredCandidates] = useState([]);
+  const [hiredLoading, setHiredLoading] = useState(false);
+  const [clients, setClients] = useState([]);
 
   const loadCandidates = async () => {
     try {
@@ -31,6 +35,13 @@ const Candidates = () => {
     loadCandidates();
   }, []);
 
+  useEffect(() => {
+    if (activeView === 'hired') {
+      loadHiredCandidates();
+      loadClients();
+    }
+  }, [activeView]);
+
   if (loading) {
     return <Loading type="list" />;
   }
@@ -38,18 +49,6 @@ const Candidates = () => {
   if (error) {
     return <Error message={error} onRetry={loadCandidates} />;
   }
-
-const [activeView, setActiveView] = useState('pool');
-  const [hiredCandidates, setHiredCandidates] = useState([]);
-  const [hiredLoading, setHiredLoading] = useState(false);
-  const [clients, setClients] = useState([]);
-
-  useEffect(() => {
-    if (activeView === 'hired') {
-      loadHiredCandidates();
-      loadClients();
-    }
-  }, [activeView]);
 
   async function loadHiredCandidates() {
     try {
