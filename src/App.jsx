@@ -5,6 +5,7 @@ import JobPostings from "@/components/pages/JobPostings";
 import Applications from "@/components/pages/Applications";
 import Candidates from "@/components/pages/Candidates";
 import Clients from "@/components/pages/Clients";
+import ClientDetail from "@/components/pages/ClientDetail";
 
 function App() {
   return (
@@ -16,6 +17,7 @@ function App() {
             <Route path="applications/*" element={<Applications />} />
             <Route path="candidates" element={<Candidates />} />
             <Route path="clients" element={<Clients />} />
+            <Route path="clients/:id" element={<ClientDetail />} />
           </Route>
         </Routes>
         

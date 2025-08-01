@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { toast } from "react-toastify";
 import Loading from "@/components/ui/Loading";
@@ -12,8 +13,8 @@ const Clients = () => {
 const [clients, setClients] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [showForm, setShowForm] = useState(false);
-
+const [showForm, setShowForm] = useState(false);
+  const navigate = useNavigate();
   const loadClients = async () => {
     try {
       setLoading(true);
@@ -41,8 +42,11 @@ const [clients, setClients] = useState([]);
     } catch (err) {
       toast.error("Failed to add client");
     }
-  };
+};
 
+  const handleClientClick = (clientId) => {
+    navigate(`/clients/${clientId}`);
+  };
   useEffect(() => {
     loadClients();
   }, []);
@@ -262,13 +266,14 @@ className="space-y-6"
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {clients.map((client, index) => (
-          <motion.div
+<motion.div
             key={client.Id}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.1 }}
             whileHover={{ y: -2, scale: 1.02 }}
-            className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-lg hover:border-primary-200 transition-all duration-200"
+            className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-lg hover:border-primary-200 transition-all duration-200 cursor-pointer"
+            onClick={() => handleClientClick(client.Id)}
           >
             <div className="flex items-start justify-between mb-4">
               <div className="flex items-center space-x-3">
