@@ -3,7 +3,7 @@ import ApperIcon from "@/components/ApperIcon";
 import Badge from "@/components/atoms/Badge";
 import { format } from "date-fns";
 
-const ApplicationItem = ({ application, index }) => {
+const ApplicationItem = ({ application, index, onViewDetail }) => {
   const getStatusVariant = (status) => {
     switch (status.toLowerCase()) {
       case "pending": return "warning";
@@ -14,13 +14,20 @@ const ApplicationItem = ({ application, index }) => {
     }
   };
 
+  const handleClick = () => {
+    if (onViewDetail) {
+      onViewDetail(application.Id);
+    }
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, x: -20 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ delay: index * 0.1 }}
       whileHover={{ scale: 1.01 }}
-      className="bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md hover:border-primary-200 transition-all duration-200"
+      onClick={handleClick}
+      className="bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md hover:border-primary-200 transition-all duration-200 cursor-pointer"
     >
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center space-x-3">

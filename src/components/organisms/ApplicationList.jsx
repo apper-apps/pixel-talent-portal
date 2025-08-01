@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { toast } from "react-toastify";
 import ApplicationItem from "@/components/molecules/ApplicationItem";
@@ -9,10 +10,15 @@ import ApperIcon from "@/components/ApperIcon";
 import { applicationService } from "@/services/api/applicationService";
 
 const ApplicationList = () => {
+const navigate = useNavigate();
   const [applications, setApplications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [filter, setFilter] = useState("all");
+
+  const handleViewDetail = (applicationId) => {
+    navigate(`/applications/${applicationId}`);
+  };
 
   const loadApplications = async () => {
     try {
@@ -93,10 +99,11 @@ const ApplicationList = () => {
 
       <motion.div layout className="space-y-4">
         {filteredApplications.map((application, index) => (
-          <ApplicationItem
+<ApplicationItem
             key={application.Id}
             application={application}
             index={index}
+            onViewDetail={handleViewDetail}
           />
         ))}
       </motion.div>
