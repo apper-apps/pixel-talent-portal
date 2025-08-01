@@ -31,13 +31,25 @@ class ApplicationService {
     return { ...newApplication };
   }
 
-  async update(id, updates) {
+async update(id, updates) {
     await this.delay(350);
     const index = this.data.findIndex(item => item.Id === parseInt(id));
     if (index === -1) {
       throw new Error("Application not found");
     }
-    this.data[index] = { ...this.data[index], ...updates };
+    
+    // Track status changes with timestamp
+    const currentItem = this.data[index];
+    const updatedItem = { ...currentItem, ...updates };
+    
+    // If status is being updated, ensure statusHistory exists
+    if (updates.status && updates.status !== currentItem.status) {
+      if (!updatedItem.statusHistory) {
+        updatedItem.statusHistory = [];
+      }
+    }
+    
+    this.data[index] = updatedItem;
     return { ...this.data[index] };
   }
 

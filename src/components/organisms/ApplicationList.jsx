@@ -43,8 +43,8 @@ const navigate = useNavigate();
     return app.status.toLowerCase() === filter;
   });
 
-  const statusCounts = applications.reduce((acc, app) => {
-    const status = app.status.toLowerCase();
+const statusCounts = applications.reduce((acc, app) => {
+    const status = app.status;
     acc[status] = (acc[status] || 0) + 1;
     return acc;
   }, {});
@@ -78,7 +78,7 @@ const navigate = useNavigate();
         </div>
         
         <div className="flex items-center space-x-2">
-          {["all", "pending", "reviewed", "accepted", "rejected"].map((status) => (
+{["all", "New", "Under Review", "Approved", "Rejected", "Assigned to Client"].map((status) => (
             <button
               key={status}
               onClick={() => setFilter(status)}
@@ -88,7 +88,7 @@ const navigate = useNavigate();
                   : "bg-gray-100 text-gray-600 hover:bg-gray-200"
               }`}
             >
-              {status === "all" ? "All" : status.charAt(0).toUpperCase() + status.slice(1)}
+              {status === "all" ? "All" : status}
               {status !== "all" && statusCounts[status] && (
                 <span className="ml-1 text-xs">({statusCounts[status]})</span>
               )}

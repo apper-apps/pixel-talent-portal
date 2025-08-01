@@ -18,8 +18,16 @@ const ApplicationDetail = () => {
   const [candidate, setCandidate] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [statusUpdating, setStatusUpdating] = useState(false);
 
-  useEffect(() => {
+  const statusOptions = [
+    { value: "New", label: "New", variant: "default" },
+    { value: "Under Review", label: "Under Review", variant: "warning" },
+    { value: "Approved", label: "Approved", variant: "success" },
+    { value: "Rejected", label: "Rejected", variant: "error" },
+    { value: "Assigned to Client", label: "Assigned to Client", variant: "primary" }
+  ];
+useEffect(() => {
     loadApplicationDetail();
   }, [id]);
 
@@ -48,20 +56,52 @@ const ApplicationDetail = () => {
     }
   };
 
-  const getStatusVariant = (status) => {
-    switch (status.toLowerCase()) {
+  const handleStatusChange = async (newStatus) => {
+    if (!application || newStatus === application.status) return;
+    
+    try {
+      setStatusUpdating(true);
+      const updates = {
+        status: newStatus,
+        statusHistory: [
+          ...(application.statusHistory || []),
+          {
+            status: newStatus,
+            changedAt: new Date().toISOString(),
+            changedBy: "Current User" // In real app, this would be the logged-in user
+          }
+        ]
+      };
+      
+      const updatedApplication = await applicationService.update(application.Id, updates);
+      setApplication(updatedApplication);
+      toast.success(`Application status updated to "${newStatus}"`);
+    } catch (err) {
+      toast.error("Failed to update application status");
+    } finally {
+      setStatusUpdating(false);
+    }
+  };
+
+const getStatusVariant = (status) => {
+    switch (status) {
+      case "New": return "default";
+      case "Under Review": return "warning";
+      case "Approved": return "success";
+      case "Rejected": return "error";
+      case "Assigned to Client": return "primary";
+      // Backwards compatibility
       case "pending": return "warning";
-      case "reviewed": return "primary";
+      case "reviewed": return "warning";
       case "accepted": return "success";
       case "rejected": return "error";
       default: return "default";
     }
   };
 
-  const handleBack = () => {
+const handleBack = () => {
     navigate("/applications");
   };
-
   if (loading) {
     return <Loading />;
   }
@@ -130,12 +170,26 @@ const ApplicationDetail = () => {
                   {format(new Date(application.appliedDate), "MMMM dd, yyyy 'at' hh:mm a")}
                 </p>
               </div>
-              <div>
+<div>
                 <label className="text-sm font-medium text-gray-500">Status</label>
-                <div className="mt-1">
+                <div className="mt-1 flex items-center gap-3">
                   <Badge variant={getStatusVariant(application.status)}>
-                    {application.status.charAt(0).toUpperCase() + application.status.slice(1)}
+                    {application.status}
                   </Badge>
+                  <div className="flex-1">
+                    <select
+                      value={application.status}
+                      onChange={(e) => handleStatusChange(e.target.value)}
+                      disabled={statusUpdating}
+                      className="w-full px-3 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
+                    >
+                      {statusOptions.map((option) => (
+                        <option key={option.value} value={option.value}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
               </div>
             </div>
@@ -264,19 +318,45 @@ const ApplicationDetail = () => {
               >
                 Schedule Interview
               </Button>
+{/* Status History */}
+              {application.statusHistory && application.statusHistory.length > 0 && (
+                <div className="mt-6">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Status History</h3>
+                  <div className="space-y-3">
+                    {application.statusHistory.map((entry, index) => (
+                      <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                        <div className="flex items-center gap-3">
+                          <Badge variant={getStatusVariant(entry.status)} size="sm">
+                            {entry.status}
+                          </Badge>
+                          <span className="text-sm text-gray-600">
+                            Changed by {entry.changedBy}
+                          </span>
+                        </div>
+                        <span className="text-sm text-gray-500">
+                          {format(new Date(entry.changedAt), "MMM dd, yyyy 'at' HH:mm")}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               <Button
-                variant="success"
+                variant="primary"
                 size="sm"
                 className="w-full"
-                onClick={() => toast.success("Application accepted!")}
+                onClick={() => handleStatusChange("Approved")}
+                disabled={statusUpdating || application.status === "Approved"}
               >
-                Accept Application
+                {statusUpdating ? "Updating..." : "Quick Approve"}
               </Button>
               <Button
                 variant="error"
                 size="sm"
                 className="w-full"
-                onClick={() => toast.error("Application rejected")}
+                onClick={() => handleStatusChange("Rejected")}
+                disabled={statusUpdating || application.status === "Rejected"}
               >
                 Reject Application
               </Button>
