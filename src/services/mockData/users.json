@@ -1,0 +1,90 @@
+[
+  {
+    "Id": 1,
+    "name": "Sarah Johnson",
+    "email": "sarah.johnson@talentfuze.com",
+    "password": "admin123",
+    "role": "Internal",
+    "company": "TalentFuze",
+    "isActive": true,
+    "createdAt": "2024-01-15T08:00:00.000Z",
+    "lastLogin": "2024-12-15T10:30:00.000Z"
+  },
+  {
+    "Id": 2,
+    "name": "Michael Chen",
+    "email": "michael.chen@example.com",
+    "password": "va123456",
+    "role": "VA",
+    "company": null,
+    "isActive": true,
+    "createdAt": "2024-02-01T09:15:00.000Z",
+    "lastLogin": "2024-12-14T14:20:00.000Z"
+  },
+  {
+    "Id": 3,
+    "name": "Emily Rodriguez",
+    "email": "emily.rodriguez@techcorp.com",
+    "password": "company123",
+    "role": "Company",
+    "company": "TechCorp Solutions",
+    "isActive": true,
+    "createdAt": "2024-02-10T11:30:00.000Z",
+    "lastLogin": "2024-12-13T16:45:00.000Z"
+  },
+  {
+    "Id": 4,
+    "name": "David Kim",
+    "email": "david.kim@freelance.com",
+    "password": "va789012",
+    "role": "VA",
+    "company": null,
+    "isActive": true,
+    "createdAt": "2024-02-20T13:45:00.000Z",
+    "lastLogin": "2024-12-12T09:10:00.000Z"
+  },
+  {
+    "Id": 5,
+    "name": "Lisa Thompson",
+    "email": "lisa.thompson@innovatetech.com",
+    "password": "company456",
+    "role": "Company",
+    "company": "InnovateTech Inc",
+    "isActive": true,
+    "createdAt": "2024-03-01T10:20:00.000Z",
+    "lastLogin": "2024-12-11T13:30:00.000Z"
+  },
+  {
+    "Id": 6,
+    "name": "Robert Martinez",
+    "email": "robert.martinez@talentfuze.com",
+    "password": "admin456",
+    "role": "Internal",
+    "company": "TalentFuze",
+    "isActive": true,
+    "createdAt": "2024-03-15T14:10:00.000Z",
+    "lastLogin": "2024-12-10T11:15:00.000Z"
+  },
+  {
+    "Id": 7,
+    "name": "Jennifer Wilson",
+    "email": "jennifer.wilson@support.com",
+    "password": "va345678",
+    "role": "VA",
+    "company": null,
+    "isActive": false,
+    "createdAt": "2024-04-01T16:25:00.000Z",
+    "lastLogin": "2024-11-20T10:05:00.000Z"
+  },
+  {
+    "Id": 8,
+    "name": "James Anderson",
+    "email": "james.anderson@globalsystems.com",
+    "password": "company789",
+    "role": "Company",
+    "company": "Global Systems Ltd",
+    "isActive": true,
+    "createdAt": "2024-04-15T12:40:00.000Z",
+    "lastLogin": "2024-12-09T15:20:00.000Z"
+  }
+]
